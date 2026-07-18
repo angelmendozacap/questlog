@@ -222,6 +222,5 @@ theme (green/blue, user-switchable), tokens in `docs/design/tokens.md`.
 
 ## 7. Open Items
 
-- TMDB and IGDB API keys need to be created (free; IGDB requires a Twitch developer account).
-- `git init` + first commit of this plan (folder already renamed to `questlog`).
+- TMDB and IGDB API keys need to be created (free; IGDB requires a Twitch developer account with 2FA — Client ID + Secret, OAuth client-credentials token renewed by the backend).
 - Rating scale final call (0–10 vs 5 stars with halves) — decide in the reviews spec (Phase 1).
