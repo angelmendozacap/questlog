@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Vista: Lista</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f-base.css">
+<style>
+  .list-head { margin-bottom: 8px; }
+  .list-head .by { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+  .list-head .desc { color: var(--muted); max-width: 60ch; }
+  .list-meta { display: flex; gap: 18px; align-items: center; margin: 14px 0 30px; flex-wrap: wrap; }
+  .rank-entry { display: grid; grid-template-columns: 40px 44px 1fr auto; gap: 14px; align-items: center; margin-bottom: 8px; }
+  .rank { font-family: "Silkscreen", monospace; font-size: 16px; color: var(--accent); text-align: center; }
+  .rank-entry .mini { width: 44px; height: 58px; font-size: 7px; }
+  .rank-entry .t { font-weight: 500; }
+  .rank-entry .k { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); }
+  .rank-entry .score { font-family: "Silkscreen", monospace; font-size: 13px; color: var(--accent); }
+  .side-list { display: block; text-decoration: none; color: var(--text); padding: 12px 0; border-bottom: 1px solid var(--frame-faint); }
+  .side-list .t { font-weight: 500; font-size: 14px; }
+  .side-list .k { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); }
+  .side-list:hover .t { color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="#">QUESTLOG<span class="cursor" aria-hidden="true"></span></a>
+    <ul>
+      <li><a class="link" href="#">Películas</a></li>
+      <li><a class="link" href="#">Series</a></li>
+      <li><a class="link" href="#">Juegos</a></li>
+      <li><a class="link" href="#" aria-current="page">Listas</a></li>
+      <li><a class="link" href="#">Diario</a></li>
+    </ul>
+    <input class="search" type="search" placeholder="/ buscar títulos" aria-label="Buscar títulos">
+    <div class="lang" role="group" aria-label="Idioma"><button aria-pressed="true">ES</button><button aria-pressed="false">EN</button></div>
+    <button class="accent-toggle" id="accentToggle" aria-label="Cambiar color de acento" title="Color de acento">
+      <span class="sw sw-green" aria-hidden="true"></span><span class="sw sw-blue" aria-hidden="true"></span>
+    </button>
+    <div class="avatar-chip" aria-label="Tu perfil">AM</div>
+  </nav>
+
+  <header class="list-head">
+    <p class="kicker">Lista pública · 12 títulos</p>
+    <h1 class="page">Los mejores RPG de 2025</h1>
+    <div class="by">
+      <div class="avatar-chip" style="background:var(--amber)">R</div>
+      <span class="name">@rvargas</span>
+      <span class="when">actualizada hace 3 días</span>
+    </div>
+    <p class="desc">Los RPG que me robaron el año, ordenados por cuánto me costó soltar el mando.
+      Solo cuentan los que terminé.</p>
+  </header>
+
+  <div class="list-meta">
+    <span class="likes">♥ 89</span>
+    <span class="when">23 guardados</span>
+    <button class="btn small">Guardar lista</button>
+    <button class="btn small">Compartir</button>
+  </div>
+
+  <div class="cols">
+    <section>
+      <div class="panel rank-entry">
+        <span class="rank">1</span><span class="mini p2">SoS</span>
+        <div><div class="t">Sea of Stars: Throes of the Watchmaker</div><div class="k">juego · 2025 · 28 h</div></div>
+        <span class="score">9.4</span>
+      </div>
+      <div class="panel rank-entry">
+        <span class="rank">2</span><span class="mini p4">HII</span>
+        <div><div class="t">Hades II</div><div class="k">juego · 2025 · 60 h</div></div>
+        <span class="score">9.0</span>
+      </div>
+      <div class="panel rank-entry">
+        <span class="rank">3</span><span class="mini p7">CO33</span>
+        <div><div class="t">Clair Obscur: Expedition 33</div><div class="k">juego · 2025 · 45 h</div></div>
+        <span class="score">8.9</span>
+      </div>
+      <div class="panel rank-entry">
+        <span class="rank">4</span><span class="mini p5">SS</span>
+        <div><div class="t">Hollow Knight: Silksong</div><div class="k">juego · 2025 · 32 h</div></div>
+        <span class="score">8.7</span>
+      </div>
+      <div class="panel rank-entry">
+        <span class="rank">5</span><span class="mini p8">AVWD</span>
+        <div><div class="t">Avowed</div><div class="k">juego · 2025 · 38 h</div></div>
+        <span class="score">8.1</span>
+      </div>
+    </section>
+
+    <aside>
+      <h2 class="sec">MÁS DE @RVARGAS</h2>
+      <div class="panel" style="padding-top:6px;padding-bottom:6px">
+        <a class="side-list" href="#"><span class="t">Metroidvanias esenciales</span><br><span class="k">15 títulos · ♥ 41</span></a>
+        <a class="side-list" href="#" style="border:none"><span class="t">Cine para después de un RPG triste</span><br><span class="k">9 títulos · ♥ 27</span></a>
+      </div>
+      <h2 class="sec" style="margin-top:26px">LISTAS POPULARES</h2>
+      <div class="panel" style="padding-top:6px;padding-bottom:6px">
+        <a class="side-list" href="#"><span class="t">Ghibli de mejor a mejor</span><br><span class="k">de @nekomata · ♥ 320</span></a>
+        <a class="side-list" href="#" style="border:none"><span class="t">Series que valen la pena en 2026</span><br><span class="k">de @sable · ♥ 154</span></a>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="site">
+    <span>Tu diario de aventuras para todo lo que ves y juegas.</span>
+    <span class="px">PARTIDA GUARDADA ▮</span>
+  </footer>
+</div>
+<script>
+  document.getElementById('accentToggle').addEventListener('click', () => {
+    const r = document.documentElement;
+    r.dataset.accent = r.dataset.accent === 'blue' ? 'green' : 'blue';
+  });
+</script>
+</body>
+</html>

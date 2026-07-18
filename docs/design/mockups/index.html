@@ -3,21 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>QuestLog — Fase 0: direcciones de diseño</title>
+<title>QuestLog — Mockups</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: system-ui, sans-serif; background: #14161c; color: #e6e9ee; padding: 40px 24px 80px; }
   h1 { font-size: 22px; margin-bottom: 6px; }
-  p.sub { color: #8a93a3; margin-bottom: 36px; }
+  h2.group { font-size: 16px; margin: 44px auto 4px; max-width: 1500px; color: #9df164; }
+  p.sub { color: #8a93a3; margin-bottom: 28px; max-width: 1500px; margin-left: auto; margin-right: auto; }
   .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; max-width: 1500px; margin: 0 auto; }
-  .dir h2 { font-size: 15px; margin-bottom: 4px; }
-  .dir .desc { color: #8a93a3; font-size: 13px; margin-bottom: 12px; min-height: 48px; }
-  .frame-wrap { border: 1px solid #2a2f3a; border-radius: 8px; overflow: hidden; height: 520px; position: relative; }
-  .frame-wrap iframe {
-    width: 285%; height: 285%; border: 0;
-    transform: scale(0.351); transform-origin: 0 0;
-    pointer-events: none;
-  }
+  .dir h3 { font-size: 14.5px; margin-bottom: 4px; }
+  .dir .desc { color: #8a93a3; font-size: 13px; margin-bottom: 12px; min-height: 38px; }
+  .frame-wrap { border: 1px solid #2a2f3a; border-radius: 8px; overflow: hidden; height: 460px; position: relative; }
+  .frame-wrap iframe { width: 285%; height: 285%; border: 0; transform: scale(0.351); transform-origin: 0 0; pointer-events: none; }
   .frame-wrap a.overlay { position: absolute; inset: 0; }
   a.open { display: inline-block; margin-top: 10px; color: #9df164; font-size: 13.5px; }
   @media (max-width: 1200px) { .grid { grid-template-columns: repeat(2, 1fr); } }
@@ -25,73 +22,74 @@
 </style>
 </head>
 <body>
-  <h1>QuestLog — Fase 0: direcciones de diseño</h1>
-  <p class="sub">Mismo contenido en todas (detalle de <em>El viaje de Chihiro</em>), copy en ES (idioma por defecto).
-    El avatar pixel aparece solo junto a <strong>tu</strong> puntuación. Haz clic en cualquier vista para abrirla a tamaño completo.</p>
+  <h1>QuestLog — Mockups</h1>
+  <p class="sub" style="text-align:left">Sistema F: layout híbrido pixel-moderno, marcos plateados sutiles, doble acento
+    verde ⇄ azul (toggle en el nav), ES por defecto. Haz clic en cualquier vista para abrirla.</p>
+
+  <h2 class="group">Vistas del producto (sistema F)</h2>
+  <p class="sub">El recorrido completo: acceso → inicio → explorar → detalle → reseña → perfil → lista → diario → admin.</p>
   <div class="grid">
-    <div class="dir">
-      <h2>A · Pixel JRPG acogedor</h2>
-      <p class="desc">Sea of Stars / FF — cajas de diálogo, bordes pixel, campo de estrellas, oro sobre azul noche.</p>
-      <div class="frame-wrap">
-        <iframe src="a-pixel-jrpg.html" title="Vista previa dirección A" loading="lazy" tabindex="-1"></iframe>
-        <a class="overlay" href="a-pixel-jrpg.html" aria-label="Abrir dirección A a tamaño completo"></a>
-      </div>
-      <a class="open" href="a-pixel-jrpg.html">Abrir a tamaño completo →</a>
-    </div>
-    <div class="dir">
-      <h2>B · JRPG cinético</h2>
-      <p class="desc">Persona 5 — rojo/negro/blanco, clip-paths dentados, paneles inclinados, animación escalonada.</p>
-      <div class="frame-wrap">
-        <iframe src="b-kinetic-jrpg.html" title="Vista previa dirección B" loading="lazy" tabindex="-1"></iframe>
-        <a class="overlay" href="b-kinetic-jrpg.html" aria-label="Abrir dirección B a tamaño completo"></a>
-      </div>
-      <a class="open" href="b-kinetic-jrpg.html">Abrir a tamaño completo →</a>
-    </div>
-    <div class="dir">
-      <h2>C · Híbrido pixel-moderno</h2>
-      <p class="desc">Layout dark moderno con detalles pixel: barra de XP, dithering, pips. Con toggle <strong>verde ⇄ azul</strong> integrado en el nav.</p>
-      <div class="frame-wrap">
-        <iframe src="c-hybrid.html" title="Vista previa dirección C" loading="lazy" tabindex="-1"></iframe>
-        <a class="overlay" href="c-hybrid.html" aria-label="Abrir dirección C a tamaño completo"></a>
-      </div>
-      <a class="open" href="c-hybrid.html">Abrir a tamaño completo →</a>
-    </div>
-    <div class="dir">
-      <h2>D · HD-2D (Octopath Traveler II)</h2>
-      <p class="desc">Marcos dorados y atardecer pictórico, ahora con la tipografía de C (Silkscreen + Inter + JetBrains Mono).</p>
-      <div class="frame-wrap">
-        <iframe src="d-hd2d.html" title="Vista previa dirección D" loading="lazy" tabindex="-1"></iframe>
-        <a class="overlay" href="d-hd2d.html" aria-label="Abrir dirección D a tamaño completo"></a>
-      </div>
-      <a class="open" href="d-hd2d.html">Abrir a tamaño completo →</a>
-    </div>
-    <div class="dir">
-      <h2>E · Mi diario (vista privada)</h2>
-      <p class="desc">Pantalla exclusiva del usuario en estilo C: registro cronológico, objetivo anual, avatar. Incluye toggle verde ⇄ azul.</p>
-      <div class="frame-wrap">
-        <iframe src="e-diario.html" title="Vista previa del diario" loading="lazy" tabindex="-1"></iframe>
-        <a class="overlay" href="e-diario.html" aria-label="Abrir el diario a tamaño completo"></a>
-      </div>
-      <a class="open" href="e-diario.html">Abrir a tamaño completo →</a>
-    </div>
-    <div class="dir">
-      <h2>F · C con marcos plateados (detalle)</h2>
-      <p class="desc">El layout de C con marcos gris acero, remaches de esquina en color de acento y marco interior. Toggle verde ⇄ azul.</p>
-      <div class="frame-wrap">
-        <iframe src="f-hybrid-plata.html" title="Vista previa opción F detalle" loading="lazy" tabindex="-1"></iframe>
-        <a class="overlay" href="f-hybrid-plata.html" aria-label="Abrir opción F detalle a tamaño completo"></a>
-      </div>
-      <a class="open" href="f-hybrid-plata.html">Abrir a tamaño completo →</a>
-    </div>
-    <div class="dir">
-      <h2>F · Diario con marcos plateados</h2>
-      <p class="desc">La vista privada del diario (E) con el mismo tratamiento de marcos plateados. Toggle verde ⇄ azul.</p>
-      <div class="frame-wrap">
-        <iframe src="f-diario-plata.html" title="Vista previa opción F diario" loading="lazy" tabindex="-1"></iframe>
-        <a class="overlay" href="f-diario-plata.html" aria-label="Abrir opción F diario a tamaño completo"></a>
-      </div>
-      <a class="open" href="f-diario-plata.html">Abrir a tamaño completo →</a>
-    </div>
+    <div class="dir"><h3>0 · Acceso</h3>
+      <p class="desc">Login/registro vía QuestLog ID (Keycloak), con la mascota pixel.</p>
+      <div class="frame-wrap"><iframe src="v-login.html" title="Acceso" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="v-login.html" aria-label="Abrir Acceso"></a></div>
+      <a class="open" href="v-login.html">Abrir →</a></div>
+    <div class="dir"><h3>1 · Inicio (feed)</h3>
+      <p class="desc">Actividad de la gente que sigues + objetivo anual + sugerencias.</p>
+      <div class="frame-wrap"><iframe src="v-home.html" title="Inicio" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="v-home.html" aria-label="Abrir Inicio"></a></div>
+      <a class="open" href="v-home.html">Abrir →</a></div>
+    <div class="dir"><h3>2 · Explorar</h3>
+      <p class="desc">Búsqueda con resultados locales + import bajo demanda desde TMDB/IGDB.</p>
+      <div class="frame-wrap"><iframe src="v-explorar.html" title="Explorar" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="v-explorar.html" aria-label="Abrir Explorar"></a></div>
+      <a class="open" href="v-explorar.html">Abrir →</a></div>
+    <div class="dir"><h3>3 · Detalle de título</h3>
+      <p class="desc">Ficha con score del grupo, distribución, "Tu puntuación" con avatar y reseñas.</p>
+      <div class="frame-wrap"><iframe src="f-hybrid-plata.html" title="Detalle" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="f-hybrid-plata.html" aria-label="Abrir Detalle"></a></div>
+      <a class="open" href="f-hybrid-plata.html">Abrir →</a></div>
+    <div class="dir"><h3>4 · Reseña</h3>
+      <p class="desc">Reseña completa con likes, hilo de comentarios y contexto del título.</p>
+      <div class="frame-wrap"><iframe src="v-resena.html" title="Reseña" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="v-resena.html" aria-label="Abrir Reseña"></a></div>
+      <a class="open" href="v-resena.html">Abrir →</a></div>
+    <div class="dir"><h3>5 · Perfil público</h3>
+      <p class="desc">Perfil de otro usuario: bio, stats, favoritos, pestañas de actividad.</p>
+      <div class="frame-wrap"><iframe src="v-perfil.html" title="Perfil" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="v-perfil.html" aria-label="Abrir Perfil"></a></div>
+      <a class="open" href="v-perfil.html">Abrir →</a></div>
+    <div class="dir"><h3>6 · Lista</h3>
+      <p class="desc">Lista pública con ranking, guardar/compartir y listas relacionadas.</p>
+      <div class="frame-wrap"><iframe src="v-lista.html" title="Lista" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="v-lista.html" aria-label="Abrir Lista"></a></div>
+      <a class="open" href="v-lista.html">Abrir →</a></div>
+    <div class="dir"><h3>7 · Mi diario (privado)</h3>
+      <p class="desc">Registro cronológico personal con objetivo anual y avatar.</p>
+      <div class="frame-wrap"><iframe src="f-diario-plata.html" title="Diario" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="f-diario-plata.html" aria-label="Abrir Diario"></a></div>
+      <a class="open" href="f-diario-plata.html">Abrir →</a></div>
+    <div class="dir"><h3>8 · Admin (moderación)</h3>
+      <p class="desc">App separada (:3001), acento ámbar fijo: reportes, usuarios, curación de catálogo.</p>
+      <div class="frame-wrap"><iframe src="v-admin.html" title="Admin" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="v-admin.html" aria-label="Abrir Admin"></a></div>
+      <a class="open" href="v-admin.html">Abrir →</a></div>
+  </div>
+
+  <h2 class="group">Exploración de direcciones (archivo Fase 0)</h2>
+  <p class="sub">Las direcciones que se evaluaron antes de elegir F. Se conservan como referencia.</p>
+  <div class="grid">
+    <div class="dir"><h3>A · Pixel JRPG acogedor</h3>
+      <p class="desc">Sea of Stars / FF — cajas de diálogo, oro sobre azul noche.</p>
+      <div class="frame-wrap"><iframe src="a-pixel-jrpg.html" title="Dirección A" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="a-pixel-jrpg.html" aria-label="Abrir A"></a></div>
+      <a class="open" href="a-pixel-jrpg.html">Abrir →</a></div>
+    <div class="dir"><h3>B · JRPG cinético</h3>
+      <p class="desc">Persona 5 — rojo/negro/blanco, paneles dentados e inclinados.</p>
+      <div class="frame-wrap"><iframe src="b-kinetic-jrpg.html" title="Dirección B" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="b-kinetic-jrpg.html" aria-label="Abrir B"></a></div>
+      <a class="open" href="b-kinetic-jrpg.html">Abrir →</a></div>
+    <div class="dir"><h3>C · Híbrido pixel-moderno</h3>
+      <p class="desc">La base del sistema F, con bordes planos originales.</p>
+      <div class="frame-wrap"><iframe src="c-hybrid.html" title="Dirección C" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="c-hybrid.html" aria-label="Abrir C"></a></div>
+      <a class="open" href="c-hybrid.html">Abrir →</a></div>
+    <div class="dir"><h3>D · HD-2D (Octopath II)</h3>
+      <p class="desc">Marcos dorados y atardecer pictórico con tipografía de C.</p>
+      <div class="frame-wrap"><iframe src="d-hd2d.html" title="Dirección D" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="d-hd2d.html" aria-label="Abrir D"></a></div>
+      <a class="open" href="d-hd2d.html">Abrir →</a></div>
+    <div class="dir"><h3>E · Diario (versión C)</h3>
+      <p class="desc">Primer mockup del diario, previo a los marcos plateados.</p>
+      <div class="frame-wrap"><iframe src="e-diario.html" title="Dirección E" loading="lazy" tabindex="-1"></iframe><a class="overlay" href="e-diario.html" aria-label="Abrir E"></a></div>
+      <a class="open" href="e-diario.html">Abrir →</a></div>
   </div>
 </body>
 </html>

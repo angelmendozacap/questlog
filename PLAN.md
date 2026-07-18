@@ -154,6 +154,10 @@ theme (green/blue, user-switchable), tokens in `docs/design/tokens.md`.
 
 ### Phase 1 — Specs & tasks 📋 (second step)
 
+> Input: full-view mockups in `docs/design/mockups/` (see its README — 9 product views
+> covering login, feed, explore/import, detail, review, profile, list, diary, admin).
+> Each spec should reference its mockup as the UI source of truth.
+
 - [ ] Write `docs/specs/` for: catalog, reviews+diary, social, lists, admin (one spec each, sequenced)
 - [ ] Define the initial OpenAPI surface for phases 2–4
 - [ ] Define initial DB schema sketch per bounded context

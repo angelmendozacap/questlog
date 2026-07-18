@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Vista: Explorar (búsqueda e importación)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f-base.css">
+<style>
+  .searchbar { display: flex; gap: 12px; margin-bottom: 18px; }
+  .searchbar input { flex: 1; font-size: 16px; padding: 13px 18px; }
+  .tabs { display: flex; gap: 8px; margin-bottom: 30px; flex-wrap: wrap; }
+  .result .mini { height: 170px; }
+  .result .score { display: flex; align-items: center; gap: 6px; margin-top: 3px; }
+  .result .score .n { font-family: "Silkscreen", monospace; font-size: 12px; color: var(--accent); }
+  .divider { display: flex; align-items: center; gap: 14px; margin: 38px 0 8px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: .12em; }
+  .divider::before, .divider::after { content: ""; height: 1px; flex: 1; background: var(--frame-dim); }
+  .import-note { color: var(--muted); font-size: 13.5px; font-style: italic; margin-bottom: 20px; }
+  .ext .mini { height: 170px; filter: saturate(.55) brightness(.8); }
+  .ext .src { font-family: "JetBrains Mono", monospace; font-size: 10.5px; color: var(--amber); }
+  .ext .btn { width: 100%; margin-top: 8px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="#">QUESTLOG<span class="cursor" aria-hidden="true"></span></a>
+    <ul>
+      <li><a class="link" href="#" aria-current="page">Películas</a></li>
+      <li><a class="link" href="#">Series</a></li>
+      <li><a class="link" href="#">Juegos</a></li>
+      <li><a class="link" href="#">Listas</a></li>
+      <li><a class="link" href="#">Diario</a></li>
+    </ul>
+    <div class="lang" role="group" aria-label="Idioma" style="margin-left:auto"><button aria-pressed="true">ES</button><button aria-pressed="false">EN</button></div>
+    <button class="accent-toggle" id="accentToggle" aria-label="Cambiar color de acento" title="Color de acento">
+      <span class="sw sw-green" aria-hidden="true"></span><span class="sw sw-blue" aria-hidden="true"></span>
+    </button>
+    <div class="avatar-chip" aria-label="Tu perfil">AM</div>
+  </nav>
+
+  <h1 class="page" style="margin-bottom:20px">Explorar</h1>
+
+  <div class="searchbar">
+    <input class="text" type="search" value="star" aria-label="Buscar títulos">
+    <button class="btn primary">Buscar</button>
+  </div>
+  <div class="tabs">
+    <button class="filter" aria-pressed="true">Todo</button>
+    <button class="filter" aria-pressed="false">Películas</button>
+    <button class="filter" aria-pressed="false">Series</button>
+    <button class="filter" aria-pressed="false">Juegos</button>
+  </div>
+
+  <h2 class="sec">EN QUESTLOG · 3 RESULTADOS</h2>
+  <div class="grid-5">
+    <a class="card result" href="#"><span class="mini p2">SEA OF STARS</span><span class="t">Sea of Stars</span>
+      <span class="kind">juego · 2023</span><span class="score"><span class="n">8.9</span><span class="kind">· 1.2k valoraciones</span></span></a>
+    <a class="card result" href="#"><span class="mini p6">STAR WARS</span><span class="t">El Imperio contraataca</span>
+      <span class="kind">película · 1980</span><span class="score"><span class="n">9.1</span><span class="kind">· 5.4k valoraciones</span></span></a>
+    <a class="card result" href="#"><span class="mini p8">STARFIELD</span><span class="t">Starfield</span>
+      <span class="kind">juego · 2023</span><span class="score"><span class="n">6.8</span><span class="kind">· 840 valoraciones</span></span></a>
+  </div>
+
+  <div class="divider">Desde TMDB / IGDB · aún no en QuestLog</div>
+  <p class="import-note">Estos títulos se importan al catálogo la primera vez que alguien los registra,
+    reseña o añade a una lista.</p>
+  <div class="grid-5">
+    <div class="card ext"><span class="mini p1">STARDUST</span><span class="t">Stardust</span>
+      <span class="kind">película · 2007</span><span class="src">TMDB</span>
+      <button class="btn small">+ Importar</button></div>
+    <div class="card ext"><span class="mini p5">STARDEW VALLEY</span><span class="t">Stardew Valley</span>
+      <span class="kind">juego · 2016</span><span class="src">IGDB</span>
+      <button class="btn small">+ Importar</button></div>
+    <div class="card ext"><span class="mini p7">STAR TREK SNW</span><span class="t">Strange New Worlds</span>
+      <span class="kind">serie · 2022</span><span class="src">TMDB</span>
+      <button class="btn small">+ Importar</button></div>
+  </div>
+
+  <footer class="site">
+    <span>Tu diario de aventuras para todo lo que ves y juegas.</span>
+    <span class="px">PARTIDA GUARDADA ▮</span>
+  </footer>
+</div>
+<script>
+  document.getElementById('accentToggle').addEventListener('click', () => {
+    const r = document.documentElement;
+    r.dataset.accent = r.dataset.accent === 'blue' ? 'green' : 'blue';
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Vista: Inicio (feed)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f-base.css">
+<style>
+  .greet { display: flex; align-items: center; gap: 20px; margin-bottom: 30px; flex-wrap: wrap; }
+  .greet .sub { color: var(--muted); font-size: 14px; }
+  .greet .goal { margin-left: auto; min-width: 240px; }
+  .goal .lbl { display: flex; justify-content: space-between; font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px; color: var(--muted); margin-bottom: 6px; }
+  .feed-card { display: grid; grid-template-columns: 34px 1fr; gap: 14px; margin-bottom: 12px; }
+  .feed-card .head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .feed-card .verb { color: var(--muted); font-size: 14px; }
+  .feed-card .title-link { color: var(--text); font-weight: 500; text-decoration: none; }
+  .feed-card .title-link:hover { color: var(--accent); }
+  .feed-card p.excerpt { color: #c3c9d4; font-size: 14px; margin-top: 6px; max-width: 62ch; }
+  .feed-card .foot { display: flex; gap: 16px; margin-top: 8px; align-items: center; }
+  .side-item { display: flex; gap: 12px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--frame-faint); }
+  .side-item .mini { width: 40px; height: 52px; font-size: 8px; flex-shrink: 0; }
+  .side-item .t { font-size: 13.5px; font-weight: 500; }
+  .side-item .k { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); }
+  .follow-item { display: flex; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--frame-faint); }
+  .follow-item .btn { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="#">QUESTLOG<span class="cursor" aria-hidden="true"></span></a>
+    <ul>
+      <li><a class="link" href="#">Películas</a></li>
+      <li><a class="link" href="#">Series</a></li>
+      <li><a class="link" href="#">Juegos</a></li>
+      <li><a class="link" href="#">Listas</a></li>
+      <li><a class="link" href="#">Diario</a></li>
+    </ul>
+    <input class="search" type="search" placeholder="/ buscar títulos" aria-label="Buscar títulos">
+    <div class="lang" role="group" aria-label="Idioma"><button aria-pressed="true">ES</button><button aria-pressed="false">EN</button></div>
+    <button class="accent-toggle" id="accentToggle" aria-label="Cambiar color de acento" title="Color de acento">
+      <span class="sw sw-green" aria-hidden="true"></span><span class="sw sw-blue" aria-hidden="true"></span>
+    </button>
+    <div class="avatar-chip" aria-label="Tu perfil">AM</div>
+  </nav>
+
+  <header class="greet">
+    <div data-sprite="idle" data-px="3" aria-label="Tu avatar"></div>
+    <div>
+      <h1 class="page">Hola, @alfredo</h1>
+      <p class="sub">Racha de 6 semanas · 3 títulos registrados esta semana</p>
+    </div>
+    <div class="goal panel-you">
+      <div class="lbl"><span>OBJETIVO 2026</span><span class="score-num" style="font-size:13px">71/100</span></div>
+      <div class="xp-bar" role="img" aria-label="Progreso 71%">
+        <div class="xp-seg full"></div><div class="xp-seg full"></div><div class="xp-seg full"></div>
+        <div class="xp-seg full"></div><div class="xp-seg full"></div><div class="xp-seg full"></div>
+        <div class="xp-seg full"></div><div class="xp-seg part"></div><div class="xp-seg"></div><div class="xp-seg"></div>
+      </div>
+    </div>
+  </header>
+
+  <div class="cols">
+    <section>
+      <h2 class="sec">TU FEED</h2>
+
+      <article class="panel feed-card">
+        <div class="avatar-chip" style="background:var(--accent)">N</div>
+        <div>
+          <div class="head"><span class="name">@nekomata</span><span class="verb">reseñó</span>
+            <a class="title-link" href="#">El viaje de Chihiro</a>
+            <span class="pips" aria-label="10 de 10"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></span>
+            <span class="when">hace 2 h</span></div>
+          <p class="excerpt">"Una casa de baños para el alma. Cada fotograma es un punto de guardado
+            al que quiero volver…"</p>
+          <div class="foot"><span class="likes">♥ 234</span><span class="when">18 respuestas</span></div>
+        </div>
+      </article>
+
+      <article class="panel feed-card">
+        <div class="avatar-chip" style="background:var(--amber)">R</div>
+        <div>
+          <div class="head"><span class="name">@rvargas</span><span class="verb">registró</span>
+            <a class="title-link" href="#">Hades II</a>
+            <span class="pips" aria-label="9 de 10"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip"></span></span>
+            <span class="when">hace 5 h</span></div>
+          <div class="foot"><span class="likes">♥ 41</span></div>
+        </div>
+      </article>
+
+      <article class="panel feed-card">
+        <div class="avatar-chip">P</div>
+        <div>
+          <div class="head"><span class="name">@pixelgriffin</span><span class="verb">añadió a pendientes</span>
+            <a class="title-link" href="#">Arcane: Temporada 2</a><span class="when">hace 8 h</span></div>
+        </div>
+      </article>
+
+      <article class="panel feed-card">
+        <div class="avatar-chip" style="background:var(--low)">M</div>
+        <div>
+          <div class="head"><span class="name">@moonpatch</span><span class="verb">creó la lista</span>
+            <a class="title-link" href="#">Cine de fantasmas para el verano</a><span class="when">ayer</span></div>
+          <div class="foot"><span class="likes">♥ 12</span><span class="when">8 títulos</span></div>
+        </div>
+      </article>
+    </section>
+
+    <aside>
+      <h2 class="sec">POPULAR ESTA SEMANA</h2>
+      <div class="panel" style="padding-top:8px;padding-bottom:8px">
+        <div class="side-item"><span class="mini p1">CH</span><div><div class="t">El viaje de Chihiro</div><div class="k">película · 9.2</div></div></div>
+        <div class="side-item"><span class="mini p4">HII</span><div><div class="t">Hades II</div><div class="k">juego · 9.0</div></div></div>
+        <div class="side-item" style="border:none"><span class="mini p7">A2</span><div><div class="t">Arcane: T2</div><div class="k">serie · 8.8</div></div></div>
+      </div>
+
+      <h2 class="sec" style="margin-top:26px">A QUIÉN SEGUIR</h2>
+      <div class="panel" style="padding-top:8px;padding-bottom:8px">
+        <div class="follow-item"><div class="avatar-chip" style="background:var(--accent)">K</div>
+          <div><div class="name">@kupo_nut</div><div class="when">28 reseñas de RPG</div></div>
+          <button class="btn small">Seguir</button></div>
+        <div class="follow-item" style="border:none"><div class="avatar-chip" style="background:var(--amber)">S</div>
+          <div><div class="name">@sable</div><div class="when">le gustan tus listas</div></div>
+          <button class="btn small">Seguir</button></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="site">
+    <span>Tu diario de aventuras para todo lo que ves y juegas.</span>
+    <span class="px">PARTIDA GUARDADA ▮</span>
+  </footer>
+</div>
+<script src="sprite.js"></script>
+<script>
+  document.getElementById('accentToggle').addEventListener('click', () => {
+    const r = document.documentElement;
+    r.dataset.accent = r.dataset.accent === 'blue' ? 'green' : 'blue';
+  });
+</script>
+</body>
+</html>

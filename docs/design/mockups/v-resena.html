@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Vista: Reseña y comentarios</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f-base.css">
+<style>
+  .crumb { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--muted); margin-bottom: 22px; }
+  .crumb a { color: var(--lav); text-decoration: none; }
+  .review-full .head { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; flex-wrap: wrap; }
+  .review-full .head .pips { margin-left: auto; }
+  .review-full p { color: #d0d5de; max-width: 72ch; margin-bottom: 14px; }
+  .spoiler { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--amber);
+    border: 1px dashed var(--amber); padding: 2px 8px; }
+  .rx-actions { display: flex; gap: 14px; align-items: center; margin: 20px 0 0; }
+  .comment { display: grid; grid-template-columns: 30px 1fr; gap: 12px; padding: 14px 0; border-bottom: 1px solid var(--frame-faint); }
+  .comment .avatar-chip { width: 30px; height: 30px; font-size: 9px; }
+  .comment p { color: #c3c9d4; font-size: 14px; }
+  .comment .meta { display: flex; gap: 12px; margin-bottom: 4px; align-items: baseline; }
+  .comment-box { display: grid; grid-template-columns: 34px 1fr auto; gap: 12px; align-items: start; margin-top: 20px; }
+  .media-side .mini { height: 190px; margin-bottom: 10px; font-size: 11px; }
+  .media-side .avg { display: flex; align-items: baseline; gap: 8px; margin-top: 4px; }
+  .media-side .avg .n { font-family: "Silkscreen", monospace; font-size: 20px; color: var(--accent); }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="#">QUESTLOG<span class="cursor" aria-hidden="true"></span></a>
+    <ul>
+      <li><a class="link" href="#" aria-current="page">Películas</a></li>
+      <li><a class="link" href="#">Series</a></li>
+      <li><a class="link" href="#">Juegos</a></li>
+      <li><a class="link" href="#">Listas</a></li>
+      <li><a class="link" href="#">Diario</a></li>
+    </ul>
+    <input class="search" type="search" placeholder="/ buscar títulos" aria-label="Buscar títulos">
+    <div class="lang" role="group" aria-label="Idioma"><button aria-pressed="true">ES</button><button aria-pressed="false">EN</button></div>
+    <button class="accent-toggle" id="accentToggle" aria-label="Cambiar color de acento" title="Color de acento">
+      <span class="sw sw-green" aria-hidden="true"></span><span class="sw sw-blue" aria-hidden="true"></span>
+    </button>
+    <div class="avatar-chip" aria-label="Tu perfil">AM</div>
+  </nav>
+
+  <p class="crumb"><a href="#">Películas</a> / <a href="#">El viaje de Chihiro (2001)</a> / reseña de @nekomata</p>
+
+  <div class="cols">
+    <section>
+      <article class="panel review-full">
+        <div class="head">
+          <div class="avatar-chip" style="background:var(--accent)">N</div>
+          <div><span class="name">@nekomata</span><br><span class="when">hace 2 días · 3.ª vez que la ve</span></div>
+          <span class="spoiler">sin spoilers</span>
+          <span class="pips" aria-label="10 de 10"><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span><span class="pip on"></span></span>
+        </div>
+        <p>Una casa de baños para el alma. Cada fotograma es un punto de guardado al que quiero
+          volver. Veinte años después, Sin Cara sigue siendo el mejor personaje mudo del cine.</p>
+        <p>Lo que más me sorprende en cada revisionado es la paciencia: Miyazaki deja que las
+          escenas respiren donde cualquier otra película metería un chiste. El tramo del tren
+          — cuatro minutos casi sin diálogo — dice más sobre crecer que guiones enteros.</p>
+        <p>Si solo puedes ver una película de Ghibli, que sea esta. Y si ya la viste,
+          vuelve: la casa de baños siempre tiene una puerta nueva.</p>
+        <div class="rx-actions">
+          <button class="btn small">♥ Me gusta · 234</button>
+          <button class="btn small">Comentar</button>
+          <span class="when">18 comentarios</span>
+        </div>
+      </article>
+
+      <h2 class="sec" style="margin-top:30px">COMENTARIOS</h2>
+      <div class="panel" style="padding-top:4px">
+        <div class="comment">
+          <div class="avatar-chip" style="background:var(--amber)">R</div>
+          <div>
+            <div class="meta"><span class="name">@rvargas</span><span class="when">hace 1 día</span></div>
+            <p>Lo del tren es exactamente eso. La vi de niño y no entendí por qué me daba pena;
+              la vi de adulto y lo entendí demasiado.</p>
+          </div>
+        </div>
+        <div class="comment" style="border:none">
+          <div class="avatar-chip">P</div>
+          <div>
+            <div class="meta"><span class="name">@pixelgriffin</span><span class="when">hace 20 h</span></div>
+            <p>"La casa de baños siempre tiene una puerta nueva" — me robo la frase para mi lista de Ghibli.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="comment-box">
+        <div class="avatar-chip">AM</div>
+        <textarea class="text" rows="2" placeholder="Escribe un comentario…" aria-label="Escribe un comentario"></textarea>
+        <button class="btn primary">Publicar</button>
+      </div>
+    </section>
+
+    <aside class="media-side">
+      <h2 class="sec">SOBRE ESTE TÍTULO</h2>
+      <a class="card" href="#"><span class="mini p1">EL VIAJE DE CHIHIRO</span></a>
+      <div style="font-weight:500">El viaje de Chihiro</div>
+      <div class="when">película · 2001 · Studio Ghibli</div>
+      <div class="avg"><span class="n">9.2</span><span class="when">· 3.214 valoraciones</span></div>
+      <h2 class="sec" style="margin-top:26px">MÁS RESEÑAS</h2>
+      <div class="panel" style="padding-top:8px;padding-bottom:8px">
+        <div class="comment"><div class="avatar-chip">P</div>
+          <div><div class="meta"><span class="name">@pixelgriffin</span><span class="score-num" style="font-size:12px">9</span></div>
+          <p>"…cálida, extraña y un poco triste."</p></div></div>
+        <div class="comment" style="border:none"><div class="avatar-chip" style="background:var(--low)">M</div>
+          <div><div class="meta"><span class="name">@moonpatch</span><span class="score-num" style="font-size:12px;color:var(--low)">4</span></div>
+          <p>"…le daré otra oportunidad en versión original."</p></div></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="site">
+    <span>Tu diario de aventuras para todo lo que ves y juegas.</span>
+    <span class="px">PARTIDA GUARDADA ▮</span>
+  </footer>
+</div>
+<script>
+  document.getElementById('accentToggle').addEventListener('click', () => {
+    const r = document.documentElement;
+    r.dataset.accent = r.dataset.accent === 'blue' ? 'green' : 'blue';
+  });
+</script>
+</body>
+</html>

@@ -1,4 +1,23 @@
-# Phase 0 — Design direction mockups
+# Design mockups
+
+## Product views (system F) — the complete journey
+
+All views share `f-base.css` (the seed of the future `@questlog/ui` tokens/components)
+and follow the F system: silver frames, dual accent toggle, ES-first copy.
+
+| # | View | File | Notes |
+| --- | --- | --- | --- |
+| 0 | Acceso | `v-login.html` | Keycloak-backed login/signup, pixel mascot |
+| 1 | Inicio (feed) | `v-home.html` | Followed activity, annual goal, follow suggestions |
+| 2 | Explorar | `v-explorar.html` | Local results + on-demand TMDB/IGDB import state |
+| 3 | Detalle | `f-hybrid-plata.html` | Aggregate score, histogram, "Tu puntuación" + avatar |
+| 4 | Reseña | `v-resena.html` | Full review, likes, comment thread, spoiler badge |
+| 5 | Perfil público | `v-perfil.html` | Other users' profile: bio, stats, favorites, tabs |
+| 6 | Lista | `v-lista.html` | Ranked public list, save/share, related lists |
+| 7 | Mi diario | `f-diario-plata.html` | Private chronological log, year goal |
+| 8 | Admin | `v-admin.html` | Separate app (:3001), fixed amber accent, moderation queue, user mgmt, catalog curation |
+
+# Phase 0 — Design direction mockups (archive)
 
 Visual directions for QuestLog, same content in all of them (media detail page:
 hero, aggregate score, rating histogram, actions, reviews, trending row).

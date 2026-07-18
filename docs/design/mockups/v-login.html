@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Vista: Acceso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f-base.css">
+<style>
+  body { display: grid; place-items: center; min-height: 100vh; }
+  .auth-wrap { width: min(420px, 92vw); padding: 24px 0 60px; }
+  .top-row { display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 26px; }
+  .auth { text-align: center; padding: 40px 34px 34px; }
+  .auth .logo { font-size: 22px; }
+  .auth .tagline { color: var(--muted); font-size: 14px; margin: 10px 0 24px; }
+  .auth .sprite-wrap { display: flex; justify-content: center; margin-bottom: 22px; }
+  .auth .btn { width: 100%; margin-bottom: 10px; padding: 12px; }
+  .auth .alt { font-size: 13.5px; color: var(--muted); margin-top: 14px; }
+  .auth .alt a { color: var(--accent); text-decoration: none; }
+  .idp-note { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted);
+    margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--frame-faint); }
+</style>
+</head>
+<body>
+<div class="auth-wrap">
+  <div class="top-row">
+    <div class="lang" role="group" aria-label="Idioma"><button aria-pressed="true">ES</button><button aria-pressed="false">EN</button></div>
+    <button class="accent-toggle" id="accentToggle" aria-label="Cambiar color de acento" title="Color de acento">
+      <span class="sw sw-green" aria-hidden="true"></span><span class="sw sw-blue" aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <div class="panel-you auth">
+    <span class="logo">QUESTLOG<span class="cursor" aria-hidden="true"></span></span>
+    <p class="tagline">Tu diario de aventuras para todo lo que ves y juegas.</p>
+    <div class="sprite-wrap"><div data-sprite="idle" data-px="4" aria-hidden="true"></div></div>
+    <button class="btn primary">Iniciar sesión</button>
+    <button class="btn">Crear cuenta</button>
+    <p class="alt">¿Solo de paso? <a href="#">Explora el catálogo sin cuenta</a></p>
+    <p class="idp-note">autenticación segura vía QuestLog ID</p>
+  </div>
+</div>
+<script src="sprite.js"></script>
+<script>
+  document.getElementById('accentToggle').addEventListener('click', () => {
+    const r = document.documentElement;
+    r.dataset.accent = r.dataset.accent === 'blue' ? 'green' : 'blue';
+  });
+</script>
+</body>
+</html>

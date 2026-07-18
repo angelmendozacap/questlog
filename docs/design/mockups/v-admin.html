@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Vista: Admin (moderación)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f-base.css">
+<style>
+  /* El admin usa acento ámbar fijo para distinguirse de la app pública (sin toggle) */
+  :root { --accent: #ffd166; --accent-deep: #d4a92f; --accent-ink: #231c05; }
+  .admin-badge { font-family: "Silkscreen", monospace; font-size: 9px; background: var(--accent);
+    color: var(--accent-ink); padding: 4px 8px; }
+  .stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 34px; }
+  .tile .n { font-family: "Silkscreen", monospace; font-size: 22px; color: var(--accent); }
+  .tile .l { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); }
+  .tile .n.alert { color: var(--low); }
+  .q-row { display: grid; grid-template-columns: 90px 1fr auto; gap: 16px; align-items: center; margin-bottom: 8px; }
+  .q-type { font-family: "JetBrains Mono", monospace; font-size: 11px; text-transform: uppercase;
+    letter-spacing: .08em; color: var(--lav); border: 1px solid var(--frame-dim); padding: 3px 8px; text-align: center; }
+  .q-row .excerpt { color: #c3c9d4; font-size: 14px; }
+  .q-row .meta { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); margin-top: 4px; }
+  .q-row .meta .reason { color: var(--low); }
+  .q-actions { display: flex; gap: 8px; }
+  .u-row { display: grid; grid-template-columns: 34px 1fr auto; gap: 14px; align-items: center;
+    padding: 12px 0; border-bottom: 1px solid var(--frame-faint); }
+  .u-row:last-child { border: none; }
+  @media (max-width: 860px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav class="top">
+    <a class="logo" href="#">QUESTLOG</a>
+    <span class="admin-badge">ADMIN</span>
+    <ul>
+      <li><a class="link" href="#" aria-current="page">Moderación</a></li>
+      <li><a class="link" href="#">Usuarios</a></li>
+      <li><a class="link" href="#">Catálogo</a></li>
+    </ul>
+    <div class="lang" role="group" aria-label="Idioma" style="margin-left:auto"><button aria-pressed="true">ES</button><button aria-pressed="false">EN</button></div>
+    <div class="avatar-chip" style="background:var(--accent);color:var(--accent-ink)" aria-label="Admin">AM</div>
+  </nav>
+
+  <h1 class="page" style="margin-bottom:26px">Moderación</h1>
+
+  <div class="stats-row">
+    <div class="panel tile"><div class="n alert">12</div><div class="l">reportes pendientes</div></div>
+    <div class="panel tile"><div class="n">8.4k</div><div class="l">usuarios activos</div></div>
+    <div class="panel tile"><div class="n">23.1k</div><div class="l">títulos en catálogo</div></div>
+    <div class="panel tile"><div class="n">41k</div><div class="l">reseñas publicadas</div></div>
+  </div>
+
+  <h2 class="sec">COLA DE REPORTES</h2>
+
+  <div class="panel q-row">
+    <span class="q-type">reseña</span>
+    <div>
+      <div class="excerpt">"Este juego es una basura y los que le ponen 10 son unos [...]"</div>
+      <div class="meta">de @troll_kart en <b>Starfield</b> · reportado por 3 usuarios ·
+        <span class="reason">lenguaje ofensivo</span> · hace 2 h</div>
+    </div>
+    <div class="q-actions">
+      <button class="btn small">Descartar</button>
+      <button class="btn small danger">Eliminar</button>
+    </div>
+  </div>
+
+  <div class="panel q-row">
+    <span class="q-type">comentario</span>
+    <div>
+      <div class="excerpt">"En el minuto 40 muere [...]" (sin marcar spoiler)</div>
+      <div class="meta">de @spoilerman en reseña de <b>Dune: Parte Dos</b> · reportado por 5 usuarios ·
+        <span class="reason">spoilers sin marcar</span> · hace 6 h</div>
+    </div>
+    <div class="q-actions">
+      <button class="btn small">Descartar</button>
+      <button class="btn small danger">Eliminar</button>
+    </div>
+  </div>
+
+  <div class="panel q-row">
+    <span class="q-type">reseña</span>
+    <div>
+      <div class="excerpt">"Compra seguidores en mi web ofertas-gamer punto com…"</div>
+      <div class="meta">de @promo_2026 en <b>Hades II</b> · reportado por 8 usuarios ·
+        <span class="reason">spam</span> · hace 1 día</div>
+    </div>
+    <div class="q-actions">
+      <button class="btn small">Descartar</button>
+      <button class="btn small danger">Eliminar</button>
+    </div>
+  </div>
+
+  <div class="cols" style="margin-top:40px">
+    <section>
+      <h2 class="sec">USUARIOS RECIENTES</h2>
+      <div class="panel" style="padding-top:6px;padding-bottom:6px">
+        <div class="u-row"><div class="avatar-chip" style="background:var(--low)">T</div>
+          <div><span class="name">@troll_kart</span><div class="when">3 reportes acumulados · registrado hace 2 semanas</div></div>
+          <button class="btn small danger">Suspender</button></div>
+        <div class="u-row"><div class="avatar-chip">K</div>
+          <div><span class="name">@kupo_nut</span><div class="when">sin reportes · registrado hace 1 mes</div></div>
+          <button class="btn small">Ver perfil</button></div>
+      </div>
+    </section>
+    <aside>
+      <h2 class="sec">CATÁLOGO · IMPORTS CON AVISOS</h2>
+      <div class="panel" style="padding-top:6px;padding-bottom:6px">
+        <div class="u-row">
+          <span class="mini p8" style="width:34px;height:44px;font-size:7px">SF</span>
+          <div><div style="font-weight:500;font-size:14px">Starfield (duplicado)</div>
+            <div class="when">IGDB #4021 y #4022 apuntan al mismo título</div></div>
+          <button class="btn small">Fusionar</button></div>
+        <div class="u-row">
+          <span class="mini p6" style="width:34px;height:44px;font-size:7px">BR</span>
+          <div><div style="font-weight:500;font-size:14px">Blade Runner 2049</div>
+            <div class="when">sinopsis ES ausente en TMDB</div></div>
+          <button class="btn small">Editar</button></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer class="site">
+    <span>QuestLog Admin · acceso restringido a rol admin (QuestLog ID)</span>
+    <span class="px">MODO ADMIN ▮</span>
+  </footer>
+</div>
+</body>
+</html>
