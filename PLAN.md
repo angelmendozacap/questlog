@@ -84,6 +84,7 @@ questlog/
 │   │   ├── catalog/          # titles, TMDB/IGDB import (anti-corruption layer)
 │   │   ├── review/           # reviews, ratings, diary
 │   │   ├── social/           # follows, likes, comments, feed
+│   │   ├── lists/            # custom lists, saves, backlog
 │   │   ├── identity/         # user profiles (synced from Keycloak)
 │   │   └── shared/           # shared kernel: errors, pagination, domain events
 │   └── tools/                # Go module: pinned dev tools (oapi-codegen, sqlc, air, golangci-lint)
@@ -152,16 +153,22 @@ theme (green/blue, user-switchable), tokens in `docs/design/tokens.md`.
 - [x] Document art direction + tokens in `docs/design/` — `docs/design/tokens.md`
 - [x] Decide the pixel/readable font pairing — **Silkscreen** (headings/numbers, small doses) + **Inter** (body) + **JetBrains Mono** (data)
 
-### Phase 1 — Specs & tasks 📋 (second step)
+### Phase 1 — Specs & tasks 📋 — ✅ COMPLETED (specs pending final user approval)
 
 > Input: full-view mockups in `docs/design/mockups/` (see its README — 9 product views
 > covering login, feed, explore/import, detail, review, profile, list, diary, admin).
 > Each spec should reference its mockup as the UI source of truth.
 
-- [ ] Write `docs/specs/` for: catalog, reviews+diary, social, lists, admin (one spec each, sequenced)
-- [ ] Define the initial OpenAPI surface for phases 2–4
-- [ ] Define initial DB schema sketch per bounded context
-- [ ] Break phases 2–9 into task lists inside each spec
+- [x] Write `docs/specs/` for: catalog (01), reviews+diary (02), social (03), lists (04), admin (05)
+- [x] Define the initial OpenAPI surface — endpoint tables inside each spec (the yaml itself lands in Phase 2)
+- [x] Define initial DB schema sketch per bounded context — "Data" section of each spec (one Postgres schema per context: catalog, review, social, lists, admin)
+- [x] Break build phases into task lists — "Task breakdown" section of each spec
+
+**Decisions made in specs:** rating scale **1–10 integers** (02); diary page private,
+logged activity public with per-entry `private` flag (02); feed via **fan-in** (03);
+`lists` promoted to its own bounded context (04); no admin god-context — admin-api
+composes handlers owned by each context + append-only audit log (05); user suspension
+= local flag + Keycloak disable, fail-closed (05).
 
 ### Phase 2 — Monorepo scaffold
 
