@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Pantalla: Mi diario (vista privada)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #171c24;
+    --panel-2: #1d232e;
+    --line: #262d38;
+    --text: #e6e9ee;
+    --muted: #8a93a3;
+    --accent: #9df164;
+    --accent-deep: #6fbf3e;
+    --accent-ink: #10230a;
+    --lav: #b3a6ff;
+    --amber: #ffd166;
+  }
+  :root[data-accent="blue"] {
+    --accent: #7ea2ff;
+    --accent-deep: #4a6fd4;
+    --accent-ink: #0b1430;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { font-family: "Inter", sans-serif; font-size: 15.5px; line-height: 1.6;
+    color: var(--text); background: var(--bg); min-height: 100vh; }
+  .px { font-family: "Silkscreen", monospace; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 24px 80px; }
+
+  nav { display: flex; align-items: center; gap: 26px; padding: 14px 0 30px; border-bottom: 1px solid var(--line); margin-bottom: 32px; flex-wrap: wrap; }
+  .logo { font-family: "Silkscreen", monospace; font-size: 17px; color: var(--text); text-decoration: none; }
+  .logo .cursor { display: inline-block; width: 9px; height: 16px; background: var(--accent);
+    vertical-align: -2px; margin-left: 4px; animation: blink 1.1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  nav ul { display: flex; gap: 24px; list-style: none; }
+  nav a.link { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 14.5px; padding-bottom: 2px; }
+  nav a.link:hover, nav a.link:focus-visible { color: var(--text); }
+  nav a.link[aria-current] { color: var(--accent); border-bottom: 2px solid var(--accent); }
+  .lang { margin-left: auto; display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .lang button { font-family: "JetBrains Mono", monospace; font-size: 12px; background: var(--panel);
+    color: var(--muted); border: 0; padding: 7px 11px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .avatar-chip { width: 34px; height: 34px; border-radius: 6px; background: var(--lav); color: var(--bg);
+    font-family: "Silkscreen", monospace; font-size: 11px; display: grid; place-items: center; }
+
+  /* header del diario */
+  .diary-head { display: flex; align-items: center; gap: 24px; margin-bottom: 10px; flex-wrap: wrap; }
+  .sprite-slot { flex-shrink: 0; }
+  .sprite-hop { animation: hop .45s steps(1, end) infinite alternate; }
+  @keyframes hop { to { transform: translateY(-6px); } }
+  .diary-head h1 { font-family: "Silkscreen", monospace; font-size: 26px; font-weight: 700; line-height: 1.1; }
+  .diary-head .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+  .diary-head .sub .mono { color: var(--lav); }
+  .private { margin-left: auto; display: flex; align-items: center; gap: 8px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--amber);
+    border: 1px dashed var(--amber); border-radius: 6px; padding: 6px 12px; }
+  .accent-toggle { font-family: "JetBrains Mono", monospace; font-size: 12px; cursor: pointer;
+    background: var(--panel); color: var(--muted); border: 1px solid var(--line);
+    border-radius: 6px; padding: 6px 12px; }
+  .accent-toggle:hover { color: var(--text); border-color: var(--muted); }
+  .accent-toggle { display: flex; gap: 6px; align-items: center; }
+  .accent-toggle .sw { width: 13px; height: 13px; border-radius: 3px; }
+  .accent-toggle .sw-green { background: #9df164; }
+  .accent-toggle .sw-blue { background: #7ea2ff; }
+  :root[data-accent="green"] .accent-toggle .sw-green,
+  :root[data-accent="blue"] .accent-toggle .sw-blue { outline: 2px solid var(--text); outline-offset: 1px; }
+  :root[data-accent="green"] .accent-toggle .sw-blue,
+  :root[data-accent="blue"] .accent-toggle .sw-green { opacity: .45; }
+
+  .stats-row { display: flex; gap: 12px; margin: 18px 0 28px; flex-wrap: wrap; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px; }
+  .stat .n { font-family: "Silkscreen", monospace; font-size: 20px; color: var(--accent); }
+  .stat .l { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); }
+
+  .filters { display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap; }
+  .filter { font-family: "JetBrains Mono", monospace; font-size: 12.5px; cursor: pointer;
+    background: var(--panel); color: var(--muted); border: 1px solid var(--line);
+    border-radius: 999px; padding: 6px 16px; }
+  .filter[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .filter:hover { border-color: var(--muted); }
+  .filter.year { margin-left: auto; border-radius: 6px; }
+
+  .cols { display: grid; grid-template-columns: 1fr 290px; gap: 36px; }
+  h2 { font-family: "Silkscreen", monospace; font-size: 14px; font-weight: 400; color: var(--text); margin-bottom: 16px; }
+  h2::before { content: "▸ "; color: var(--accent); }
+
+  .month { margin-bottom: 34px; }
+  .entry { display: grid; grid-template-columns: 44px 44px 1fr auto; gap: 14px; align-items: center;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px 16px; margin-bottom: 8px; }
+  .entry .day { font-family: "JetBrains Mono", monospace; text-align: center; }
+  .entry .day .d { font-size: 18px; color: var(--text); display: block; line-height: 1.1; }
+  .entry .day .w { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+  .entry .mini { width: 44px; height: 58px; border-radius: 4px; border: 1px solid var(--line);
+    position: relative; overflow: hidden; }
+  .entry .mini::after { content: ""; position: absolute; inset: 0;
+    background: repeating-conic-gradient(#0000 0% 25%, #0e111633 0% 50%) 0 0 / 3px 3px; }
+  .entry .info .t { font-weight: 500; }
+  .entry .info .meta { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted);
+    display: flex; gap: 10px; margin-top: 3px; flex-wrap: wrap; }
+  .entry .meta .tag { color: var(--lav); }
+  .entry .meta .rw { color: var(--amber); }
+  .entry .right { display: flex; align-items: center; gap: 14px; }
+  .pips { display: flex; gap: 2px; }
+  .pip { width: 8px; height: 8px; background: var(--panel-2); border: 1px solid var(--line); }
+  .pip.on { background: var(--accent); border-color: var(--accent); }
+  .entry .icons { font-size: 14px; color: var(--muted); display: flex; gap: 8px; }
+  .entry .icons .has { color: var(--accent); }
+  .status { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--amber);
+    border: 1px solid var(--amber); border-radius: 4px; padding: 2px 8px; }
+
+  .p1 { background: linear-gradient(165deg, #3d1d4f, #c94f6d); }
+  .p2 { background: linear-gradient(165deg, #2b3a72, #7fb3d5); }
+  .p3 { background: linear-gradient(165deg, #6e3b1c, #d8a24a); }
+  .p4 { background: linear-gradient(165deg, #1c3a2d, #74c69d); }
+  .p5 { background: linear-gradient(165deg, #14265c, #29c3a6); }
+  .p6 { background: linear-gradient(165deg, #232323, #14476b); }
+
+  /* sidebar */
+  .side-panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 24px; }
+  .goal-head { display: flex; justify-content: space-between; align-items: baseline;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+  .goal-head .n { font-family: "Silkscreen", monospace; font-size: 16px; color: var(--accent); }
+  .xp-bar { display: flex; gap: 3px; height: 14px; }
+  .xp-seg { flex: 1; background: var(--panel-2); border: 1px solid var(--line); }
+  .xp-seg.full { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 -3px 0 var(--accent-deep); }
+  .xp-seg.part { background: linear-gradient(90deg, var(--accent) 40%, var(--panel-2) 40%); }
+  .goal-sub { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  .mbars { display: flex; align-items: flex-end; gap: 5px; height: 64px; }
+  .mbar { flex: 1; background: var(--panel-2); border-top: 2px solid var(--accent); min-height: 4px; }
+  .mlabels { display: flex; justify-content: space-between; font-family: "JetBrains Mono", monospace;
+    font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+  .genre { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--line);
+    font-size: 13.5px; color: var(--muted); }
+  .genre b { color: var(--text); font-weight: 500; }
+  .genre .mono { color: var(--accent); }
+
+  footer { margin-top: 60px; border-top: 1px solid var(--line); padding-top: 24px;
+    color: var(--muted); font-size: 13.5px; display: flex; justify-content: space-between; }
+  footer .px { font-size: 10px; color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+  @media (max-width: 860px) {
+    .cols { grid-template-columns: 1fr; }
+    .entry { grid-template-columns: 40px 40px 1fr; }
+    .entry .right { grid-column: 3; justify-content: flex-end; }
+    .lang { margin-left: 0; }
+    .private { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <a class="logo" href="#">QUESTLOG<span class="cursor" aria-hidden="true"></span></a>
+    <ul>
+      <li><a class="link" href="#">Películas</a></li>
+      <li><a class="link" href="#">Series</a></li>
+      <li><a class="link" href="#">Juegos</a></li>
+      <li><a class="link" href="#">Listas</a></li>
+      <li><a class="link" href="#" aria-current="page">Diario</a></li>
+    </ul>
+    <div class="lang" role="group" aria-label="Idioma">
+      <button aria-pressed="true">ES</button>
+      <button aria-pressed="false">EN</button>
+    </div>
+    <div class="avatar-chip" aria-label="Tu perfil">AM</div>
+  </nav>
+
+  <header class="diary-head">
+    <div class="sprite-slot sprite-hop" data-sprite="cheer" data-px="4" aria-label="Tu avatar"></div>
+    <div>
+      <h1>Mi diario</h1>
+      <p class="sub"><span class="mono">@alfredo</span> · nivel 12 · racha de 6 semanas</p>
+    </div>
+    <span class="private">🔒 Vista privada — solo tú puedes ver esta página</span>
+    <button class="accent-toggle" id="accentToggle" aria-label="Cambiar color de acento" title="Color de acento">
+      <span class="sw sw-green" aria-hidden="true"></span><span class="sw sw-blue" aria-hidden="true"></span>
+    </button>
+  </header>
+
+  <div class="stats-row">
+    <div class="stat"><span class="n">48</span> <span class="l">películas en 2026</span></div>
+    <div class="stat"><span class="n">23</span> <span class="l">juegos en 2026</span></div>
+    <div class="stat"><span class="n">12</span> <span class="l">reseñas escritas</span></div>
+    <div class="stat"><span class="n">7</span> <span class="l">en pendientes</span></div>
+  </div>
+
+  <div class="filters">
+    <button class="filter" aria-pressed="true">Todo</button>
+    <button class="filter" aria-pressed="false">Películas</button>
+    <button class="filter" aria-pressed="false">Series</button>
+    <button class="filter" aria-pressed="false">Juegos</button>
+    <button class="filter year" aria-pressed="false">2026 ▾</button>
+  </div>
+
+  <div class="cols">
+    <section>
+      <div class="month">
+        <h2>JULIO 2026</h2>
+
+        <div class="entry">
+          <div class="day"><span class="d">15</span><span class="w">mié</span></div>
+          <div class="mini p1" role="img" aria-label="Hades II"></div>
+          <div class="info">
+            <div class="t">Hades II</div>
+            <div class="meta"><span class="tag">juego</span><span>PC</span><span>~42 h</span></div>
+          </div>
+          <div class="right">
+            <div class="pips" aria-label="Puntuación 9 de 10">
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip"></span>
+            </div>
+            <div class="icons"><span class="has" title="Con reseña">✎</span></div>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="day"><span class="d">12</span><span class="w">dom</span></div>
+          <div class="mini p2" role="img" aria-label="El viaje de Chihiro"></div>
+          <div class="info">
+            <div class="t">El viaje de Chihiro</div>
+            <div class="meta"><span class="tag">película</span><span class="rw">↻ revisionado</span><span>en casa</span></div>
+          </div>
+          <div class="right">
+            <div class="pips" aria-label="Puntuación 9 de 10">
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip"></span>
+            </div>
+            <div class="icons"><span class="has" title="Con reseña">✎</span></div>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="day"><span class="d">08</span><span class="w">mié</span></div>
+          <div class="mini p3" role="img" aria-label="Dune: Parte Dos"></div>
+          <div class="info">
+            <div class="t">Dune: Parte Dos</div>
+            <div class="meta"><span class="tag">película</span><span>cine</span></div>
+          </div>
+          <div class="right">
+            <div class="pips" aria-label="Puntuación 8 de 10">
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip"></span>
+              <span class="pip"></span>
+            </div>
+            <div class="icons"><span title="Sin reseña">✎</span></div>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="day"><span class="d">05</span><span class="w">dom</span></div>
+          <div class="mini" style="background:linear-gradient(165deg,#2b1d3f,#7a4fd0)" role="img" aria-label="Arcane"></div>
+          <div class="info">
+            <div class="t">Arcane: Temporada 2</div>
+            <div class="meta"><span class="tag">serie</span><span>9 episodios</span></div>
+          </div>
+          <div class="right">
+            <div class="pips" aria-label="Puntuación 9 de 10">
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip"></span>
+            </div>
+            <div class="icons"><span title="Sin reseña">✎</span></div>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="day"><span class="d">03</span><span class="w">vie</span></div>
+          <div class="mini p4" role="img" aria-label="Silksong"></div>
+          <div class="info">
+            <div class="t">Hollow Knight: Silksong</div>
+            <div class="meta"><span class="tag">juego</span><span>Switch</span><span>~11 h</span></div>
+          </div>
+          <div class="right">
+            <span class="status">en curso</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="month">
+        <h2>JUNIO 2026</h2>
+
+        <div class="entry">
+          <div class="day"><span class="d">28</span><span class="w">dom</span></div>
+          <div class="mini p5" role="img" aria-label="Sea of Stars"></div>
+          <div class="info">
+            <div class="t">Sea of Stars</div>
+            <div class="meta"><span class="tag">juego</span><span>PC</span><span>34 h · terminado</span></div>
+          </div>
+          <div class="right">
+            <div class="pips" aria-label="Puntuación 10 de 10">
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span>
+            </div>
+            <div class="icons"><span class="has" title="Con reseña">✎</span></div>
+          </div>
+        </div>
+
+        <div class="entry">
+          <div class="day"><span class="d">19</span><span class="w">vie</span></div>
+          <div class="mini p6" role="img" aria-label="Blade Runner 2049"></div>
+          <div class="info">
+            <div class="t">Blade Runner 2049</div>
+            <div class="meta"><span class="tag">película</span><span class="rw">↻ revisionado</span><span>en casa</span></div>
+          </div>
+          <div class="right">
+            <div class="pips" aria-label="Puntuación 10 de 10">
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+              <span class="pip on"></span>
+            </div>
+            <div class="icons"><span title="Sin reseña">✎</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      <h2>OBJETIVO 2026</h2>
+      <div class="side-panel">
+        <div class="goal-head"><span>71 / 100 títulos</span><span class="n">71%</span></div>
+        <div class="xp-bar" role="img" aria-label="Progreso del objetivo anual: 71 por ciento">
+          <div class="xp-seg full"></div><div class="xp-seg full"></div><div class="xp-seg full"></div>
+          <div class="xp-seg full"></div><div class="xp-seg full"></div><div class="xp-seg full"></div>
+          <div class="xp-seg full"></div><div class="xp-seg part"></div><div class="xp-seg"></div>
+          <div class="xp-seg"></div>
+        </div>
+        <div class="goal-sub">¡vas 12 por delante del ritmo del año pasado!</div>
+      </div>
+
+      <h2>POR MES</h2>
+      <div class="side-panel">
+        <div class="mbars" aria-hidden="true">
+          <div class="mbar" style="height:40%"></div><div class="mbar" style="height:55%"></div>
+          <div class="mbar" style="height:35%"></div><div class="mbar" style="height:70%"></div>
+          <div class="mbar" style="height:60%"></div><div class="mbar" style="height:90%"></div>
+          <div class="mbar" style="height:45%"></div>
+        </div>
+        <div class="mlabels"><span>ene</span><span>jul</span></div>
+      </div>
+
+      <h2>TUS GÉNEROS</h2>
+      <div class="side-panel">
+        <div class="genre"><b>RPG</b><span class="mono">18</span></div>
+        <div class="genre"><b>Animación</b><span class="mono">14</span></div>
+        <div class="genre"><b>Ciencia ficción</b><span class="mono">11</span></div>
+        <div class="genre"><b>Metroidvania</b><span class="mono">6</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <footer>
+    <span>Tu diario de aventuras para todo lo que ves y juegas.</span>
+    <span class="px">PARTIDA GUARDADA ▮</span>
+  </footer>
+</div>
+<script src="sprite.js"></script>
+<script>
+  document.getElementById('accentToggle').addEventListener('click', () => {
+    const root = document.documentElement;
+    root.dataset.accent = root.dataset.accent === 'blue' ? 'green' : 'blue';
+  });
+</script>
+</body>
+</html>

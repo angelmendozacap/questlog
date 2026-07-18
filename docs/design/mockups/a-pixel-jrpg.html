@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Dirección A: Pixel JRPG acogedor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --night: #10122b;
+    --night-deep: #0a0b1e;
+    --panel-hi: #232866;
+    --panel-lo: #161a44;
+    --cream: #e8e4d8;
+    --gold: #f5c95c;
+    --teal: #7de3d2;
+    --text: #f2ead8;
+    --muted: #9095c9;
+    --hp: #63d67a;
+    --rose: #e26a5a;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--night); }
+  body {
+    font-family: "VT323", monospace;
+    font-size: 21px;
+    line-height: 1.35;
+    color: var(--text);
+    background:
+      radial-gradient(ellipse 120% 60% at 50% -10%, #1c2050 0%, transparent 60%),
+      var(--night);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+  .stars, .stars::after {
+    content: "";
+    position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background-image:
+      radial-gradient(1px 1px at 12% 22%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 78% 12%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 34% 64%, var(--teal) 50%, transparent 51%),
+      radial-gradient(1px 1px at 62% 40%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 90% 72%, #fff 50%, transparent 51%),
+      radial-gradient(2px 2px at 8% 84%, var(--gold) 50%, transparent 51%),
+      radial-gradient(1px 1px at 46% 8%, #fff 50%, transparent 51%),
+      radial-gradient(1px 1px at 70% 90%, #fff 50%, transparent 51%);
+    animation: twinkle 4s steps(2) infinite;
+  }
+  .stars::after {
+    transform: translate(30px, 45px) scale(1.4);
+    animation-delay: 2s; opacity: .5;
+  }
+  @keyframes twinkle { 50% { opacity: .35; } }
+
+  .wrap { position: relative; z-index: 1; max-width: 1060px; margin: 0 auto; padding: 24px 20px 80px; }
+
+  .panel {
+    background: linear-gradient(180deg, var(--panel-hi), var(--panel-lo));
+    border: 3px solid var(--cream);
+    box-shadow: 0 0 0 3px var(--night-deep), inset 0 0 0 2px var(--night-deep);
+    clip-path: polygon(0 6px, 6px 6px, 6px 0, calc(100% - 6px) 0, calc(100% - 6px) 6px, 100% 6px,
+      100% calc(100% - 6px), calc(100% - 6px) calc(100% - 6px), calc(100% - 6px) 100%,
+      6px 100%, 6px calc(100% - 6px), 0 calc(100% - 6px));
+    padding: 20px;
+  }
+  h1, h2, h3, .ps { font-family: "Press Start 2P", monospace; line-height: 1.6; }
+
+  nav { display: flex; align-items: center; gap: 24px; padding: 14px 4px 26px; flex-wrap: wrap; }
+  .logo { font-family: "Press Start 2P", monospace; font-size: 15px; color: var(--gold);
+    text-shadow: 3px 3px 0 var(--night-deep); text-decoration: none; }
+  .logo span { color: var(--teal); }
+  nav ul { display: flex; gap: 22px; list-style: none; margin-left: auto; }
+  nav a.menu-item { font-size: 22px; color: var(--text); text-decoration: none; position: relative; padding-left: 20px; }
+  nav a.menu-item::before { content: "▶"; position: absolute; left: 0; color: var(--gold);
+    opacity: 0; font-size: 14px; top: 4px; }
+  nav a.menu-item:hover::before, nav a.menu-item:focus-visible::before { opacity: 1; animation: blink 1s steps(2) infinite; }
+  nav a.menu-item[aria-current] { color: var(--gold); }
+  nav a.menu-item[aria-current]::before { opacity: 1; }
+  @keyframes blink { 50% { opacity: 0; } }
+  .search { font-family: "VT323", monospace; font-size: 20px; background: var(--night-deep);
+    color: var(--text); border: 2px solid var(--muted); padding: 4px 12px; width: 180px; }
+  .search::placeholder { color: var(--muted); }
+  .lang { display: flex; border: 2px solid var(--muted); font-family: "Press Start 2P", monospace; font-size: 9px; }
+  .lang button { background: var(--night-deep); border: 0; color: var(--muted); padding: 8px 10px; font: inherit; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--gold); color: var(--night-deep); }
+  .avatar-chip { width: 36px; height: 36px; background: var(--rose); color: var(--night-deep);
+    font-family: "Press Start 2P", monospace; font-size: 11px; display: grid; place-items: center;
+    border: 3px solid var(--cream); box-shadow: 2px 2px 0 var(--night-deep); }
+
+  .hero { display: grid; grid-template-columns: 240px 1fr; gap: 24px; margin-bottom: 24px; }
+  .poster { height: 340px; position: relative; border: 3px solid var(--cream);
+    box-shadow: 0 0 0 3px var(--night-deep), 6px 6px 0 var(--night-deep);
+    background:
+      radial-gradient(circle at 70% 22%, #f7e8b0 0 26px, transparent 27px),
+      radial-gradient(circle at 62% 18%, #1b2a5e 0 22px, transparent 23px),
+      linear-gradient(180deg, #26356e 0%, #3a5a8f 45%, #b0575a 78%, #7c3b52 100%);
+    image-rendering: pixelated; }
+  .poster::after { content: ""; position: absolute; inset: auto 0 0 0; height: 46%;
+    background: repeating-conic-gradient(#0000 0% 25%, #0a0b1e33 0% 50%) 0 0 / 8px 8px; }
+  .poster .glyph { position: absolute; bottom: 14px; left: 0; right: 0; text-align: center;
+    font-family: "Press Start 2P", monospace; font-size: 10px; color: var(--cream);
+    text-shadow: 2px 2px 0 var(--night-deep); z-index: 1; letter-spacing: 2px; }
+  .hero-info h1 { font-size: 20px; color: var(--gold); text-shadow: 3px 3px 0 var(--night-deep); margin-bottom: 10px; }
+  .hero-info .year { color: var(--teal); font-family: "VT323", monospace; font-size: 22px; text-shadow: none; }
+  .byline { color: var(--muted); margin-bottom: 12px; }
+  .byline b { color: var(--text); font-weight: normal; }
+  .chips { display: flex; gap: 10px; margin-bottom: 14px; flex-wrap: wrap; }
+  .chip { font-size: 18px; color: var(--night-deep); background: var(--teal);
+    padding: 1px 10px; border: 2px solid var(--cream); box-shadow: 2px 2px 0 var(--night-deep); }
+  .chip.alt { background: var(--gold); }
+  .synopsis { max-width: 56ch; margin-bottom: 18px; }
+  .stats { display: flex; gap: 26px; color: var(--muted); }
+  .stats b { color: var(--text); font-weight: normal; }
+
+  .score-row { display: grid; grid-template-columns: 240px 1fr 270px; gap: 24px; margin-bottom: 24px; }
+  .score-panel { text-align: center; }
+  .score-panel .label, .histo .label, .you .label { font-size: 10px; color: var(--teal); margin-bottom: 8px; }
+  .big-score { font-family: "VT323", monospace; font-size: 84px; line-height: .9; color: var(--gold);
+    text-shadow: 4px 4px 0 var(--night-deep); }
+  .score-stars { color: var(--gold); font-size: 24px; letter-spacing: 4px; margin-top: 6px; }
+  .score-panel .count { color: var(--muted); font-size: 19px; margin-top: 4px; }
+  .histo .label { margin-bottom: 14px; }
+  .bars { display: flex; align-items: flex-end; gap: 8px; height: 110px; }
+  .bar { flex: 1; background: var(--hp); border: 2px solid var(--night-deep);
+    box-shadow: inset 0 3px 0 #a5f0b3; min-height: 8px; }
+  .bar:nth-child(-n+4) { background: var(--rose); box-shadow: inset 0 3px 0 #f0a08d; }
+  .bar:nth-child(5), .bar:nth-child(6) { background: var(--gold); box-shadow: inset 0 3px 0 #ffe9a8; }
+  .bar-scale { display: flex; justify-content: space-between; color: var(--muted); font-size: 18px; margin-top: 6px; }
+
+  /* Tu puntuación (avatar del usuario) */
+  .you { text-align: center; }
+  .you-inner { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 4px; }
+  .you .n { font-family: "VT323", monospace; font-size: 64px; color: var(--teal);
+    text-shadow: 4px 4px 0 var(--night-deep); line-height: 1; }
+  .you .date { color: var(--muted); font-size: 18px; margin-top: 6px; }
+  .you .edit { margin-top: 10px; }
+  .sprite-hop { animation: hop .45s steps(1, end) infinite alternate; }
+  @keyframes hop { to { transform: translateY(-6px); } }
+
+  .actions { display: flex; gap: 14px; margin-bottom: 30px; flex-wrap: wrap; }
+  .btn { font-family: "Press Start 2P", monospace; font-size: 10px; cursor: pointer;
+    color: var(--night-deep); background: var(--gold);
+    border: 3px solid var(--cream); box-shadow: 0 0 0 3px var(--night-deep), 4px 4px 0 var(--night-deep);
+    padding: 12px 16px; }
+  .btn.secondary { background: var(--panel-hi); color: var(--text); }
+  .btn:hover, .btn:focus-visible { transform: translate(2px, 2px);
+    box-shadow: 0 0 0 3px var(--night-deep), 2px 2px 0 var(--night-deep); }
+  .btn:focus-visible { outline: 3px dashed var(--teal); outline-offset: 4px; }
+  .btn.small { font-size: 8px; padding: 8px 12px; }
+
+  .section-title { font-size: 13px; color: var(--teal); margin: 34px 0 18px; text-shadow: 3px 3px 0 var(--night-deep); }
+  .review { margin-bottom: 18px; position: relative; }
+  .review-head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .pix-avatar { width: 34px; height: 34px; border: 2px solid var(--cream); box-shadow: 2px 2px 0 var(--night-deep);
+    display: grid; place-items: center; font-family: "Press Start 2P", monospace; font-size: 10px;
+    color: var(--night-deep); }
+  .review-head .name { color: var(--teal); }
+  .review-head .rscore { margin-left: auto; color: var(--gold); font-family: "Press Start 2P", monospace; font-size: 12px; }
+  .review p { max-width: 74ch; }
+  .review-foot { display: flex; gap: 18px; color: var(--muted); margin-top: 10px; font-size: 19px; }
+  .review-foot .likes { color: var(--rose); }
+  .cursor-down { position: absolute; right: 16px; bottom: 10px; color: var(--cream); font-size: 16px;
+    animation: bob 1s steps(2) infinite; }
+  @keyframes bob { 50% { transform: translateY(4px); } }
+
+  .trending { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .card { text-align: center; text-decoration: none; color: var(--text); }
+  .card .mini { height: 150px; border: 3px solid var(--cream);
+    box-shadow: 0 0 0 2px var(--night-deep), 4px 4px 0 var(--night-deep);
+    display: grid; place-items: center; font-family: "Press Start 2P", monospace; font-size: 16px;
+    color: #fff; text-shadow: 2px 2px 0 var(--night-deep); margin-bottom: 10px;
+    image-rendering: pixelated; position: relative; }
+  .card .mini::after { content: ""; position: absolute; inset: 0;
+    background: repeating-conic-gradient(#0000 0% 25%, #0a0b1e2e 0% 50%) 0 0 / 6px 6px; }
+  .card:hover .mini, .card:focus-visible .mini { transform: translate(-2px, -2px);
+    box-shadow: 0 0 0 2px var(--night-deep), 6px 6px 0 var(--night-deep); }
+  .card .t { font-size: 19px; display: block; }
+  .card .kind { color: var(--muted); font-size: 17px; }
+  .m1 { background: linear-gradient(160deg, #2b3a72, #7fb3d5); }
+  .m2 { background: linear-gradient(160deg, #14265c, #29c3a6); }
+  .m3 { background: linear-gradient(160deg, #6e3b1c, #d8a24a); }
+  .m4 { background: linear-gradient(160deg, #3d1d4f, #c94f6d); }
+  .m5 { background: linear-gradient(160deg, #1c3a2d, #74c69d); }
+
+  footer { margin-top: 60px; color: var(--muted); text-align: center; font-size: 18px; }
+  footer .ps { font-size: 9px; color: var(--teal); margin-top: 8px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+    .score-row { grid-template-columns: 1fr; }
+    .poster { max-width: 240px; }
+    .trending { grid-template-columns: repeat(2, 1fr); }
+    nav ul { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="stars" aria-hidden="true"></div>
+<div class="wrap">
+
+  <nav>
+    <a class="logo" href="#">QUEST<span>LOG</span></a>
+    <ul>
+      <li><a class="menu-item" href="#" aria-current="page">Películas</a></li>
+      <li><a class="menu-item" href="#">Series</a></li>
+      <li><a class="menu-item" href="#">Juegos</a></li>
+      <li><a class="menu-item" href="#">Listas</a></li>
+      <li><a class="menu-item" href="#">Diario</a></li>
+    </ul>
+    <input class="search" type="search" placeholder="Buscar títulos…" aria-label="Buscar títulos">
+    <div class="lang" role="group" aria-label="Idioma">
+      <button aria-pressed="true">ES</button>
+      <button aria-pressed="false">EN</button>
+    </div>
+    <div class="avatar-chip" aria-label="Tu perfil">AM</div>
+  </nav>
+
+  <section class="hero">
+    <div class="poster" role="img" aria-label="Cartel de El viaje de Chihiro">
+      <span class="glyph">EL VIAJE<br>DE CHIHIRO</span>
+    </div>
+    <div class="panel hero-info">
+      <h1>El viaje de Chihiro <span class="year">(2001)</span></h1>
+      <p class="byline">Dirigida por <b>Hayao Miyazaki</b> · 125 min · Studio Ghibli</p>
+      <div class="chips">
+        <span class="chip">Animación</span>
+        <span class="chip alt">Fantasía</span>
+        <span class="chip">Aventura</span>
+      </div>
+      <p class="synopsis">Chihiro se adentra en un mundo de espíritus y deberá trabajar en una casa
+        de baños para los dioses si quiere liberar a sus padres — y recordar su propio nombre.</p>
+      <div class="stats">
+        <span><b>12.4k</b> vistas</span>
+        <span><b>3.2k</b> reseñas</span>
+        <span><b>890</b> listas</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="score-row">
+    <div class="panel score-panel">
+      <div class="label ps">PUNTUACIÓN DEL GRUPO</div>
+      <div class="big-score">9.2</div>
+      <div class="score-stars">★★★★★</div>
+      <div class="count">de 3.214 aventureros</div>
+    </div>
+    <div class="panel histo">
+      <div class="label ps">DISTRIBUCIÓN</div>
+      <div class="bars" aria-hidden="true">
+        <div class="bar" style="height:6%"></div><div class="bar" style="height:4%"></div>
+        <div class="bar" style="height:5%"></div><div class="bar" style="height:8%"></div>
+        <div class="bar" style="height:12%"></div><div class="bar" style="height:18%"></div>
+        <div class="bar" style="height:34%"></div><div class="bar" style="height:58%"></div>
+        <div class="bar" style="height:82%"></div><div class="bar" style="height:100%"></div>
+      </div>
+      <div class="bar-scale"><span>1</span><span>10</span></div>
+    </div>
+    <div class="panel you">
+      <div class="label ps">TU PUNTUACIÓN</div>
+      <div class="you-inner">
+        <div class="sprite-hop" data-sprite="cheer" data-px="3" aria-label="Tu avatar celebra tu puntuación"></div>
+        <div class="n">9</div>
+      </div>
+      <div class="date">Vista el 12 JUL 2026</div>
+      <button class="btn secondary small edit">EDITAR</button>
+    </div>
+  </section>
+
+  <div class="actions">
+    <button class="btn">▶ REGISTRAR</button>
+    <button class="btn secondary">ESCRIBIR RESEÑA</button>
+    <button class="btn secondary">+ PENDIENTES</button>
+    <button class="btn secondary">+ LISTA</button>
+  </div>
+
+  <h2 class="section-title">RESEÑAS RECIENTES</h2>
+
+  <article class="panel review">
+    <div class="review-head">
+      <div class="pix-avatar" style="background:var(--teal)">N</div>
+      <span class="name">@nekomata</span>
+      <span class="rscore">10</span>
+    </div>
+    <p>Una casa de baños para el alma. Cada fotograma es un punto de guardado al que quiero volver.
+      Veinte años después, Sin Cara sigue siendo el mejor personaje mudo del cine.</p>
+    <div class="review-foot"><span class="likes">♥ 234</span><span>▷ 18 respuestas</span></div>
+    <span class="cursor-down" aria-hidden="true">▼</span>
+  </article>
+
+  <article class="panel review">
+    <div class="review-head">
+      <div class="pix-avatar" style="background:var(--gold)">P</div>
+      <span class="name">@pixelgriffin</span>
+      <span class="rscore">9</span>
+    </div>
+    <p>La vi la misma noche que terminé Sea of Stars y las dos se mezclan de la mejor manera:
+      cálida, extraña y un poco triste. La secuencia del tren justifica sola la puntuación.</p>
+    <div class="review-foot"><span class="likes">♥ 156</span><span>▷ 9 respuestas</span></div>
+    <span class="cursor-down" aria-hidden="true">▼</span>
+  </article>
+
+  <h2 class="section-title">TENDENCIAS</h2>
+  <div class="trending">
+    <a class="card" href="#"><span class="mini m1">CH</span><span class="t">El viaje de Chihiro</span><span class="kind">Película</span></a>
+    <a class="card" href="#"><span class="mini m2">SoS</span><span class="t">Sea of Stars</span><span class="kind">Juego</span></a>
+    <a class="card" href="#"><span class="mini m3">D2</span><span class="t">Dune: Parte Dos</span><span class="kind">Película</span></a>
+    <a class="card" href="#"><span class="mini m4">HII</span><span class="t">Hades II</span><span class="kind">Juego</span></a>
+    <a class="card" href="#"><span class="mini m5">SS</span><span class="t">Silksong</span><span class="kind">Juego</span></a>
+  </div>
+
+  <footer>
+    <p>Tu diario de aventuras para todo lo que ves y juegas.</p>
+    <p class="ps">— PARTIDA GUARDADA —</p>
+  </footer>
+</div>
+<script src="sprite.js"></script>
+</body>
+</html>

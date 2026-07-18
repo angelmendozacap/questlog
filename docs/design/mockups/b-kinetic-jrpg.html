@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Dirección B: JRPG cinético</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow:ital,wght@0,400;0,600;1,400&family=Barlow+Condensed:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #0a0a0a;
+    --paper: #f5f5f0;
+    --red: #e60023;
+    --red-deep: #a80016;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--ink); }
+  body {
+    font-family: "Barlow", sans-serif;
+    font-size: 17px; line-height: 1.5; color: var(--paper);
+    background:
+      radial-gradient(circle, #ffffff0d 1px, transparent 1.4px) 0 0 / 14px 14px,
+      linear-gradient(115deg, var(--ink) 55%, #141414 55%);
+    overflow-x: hidden; min-height: 100vh;
+  }
+  .display { font-family: "Anton", sans-serif; text-transform: uppercase; font-style: italic; letter-spacing: .01em; }
+  .cond { font-family: "Barlow Condensed", sans-serif; text-transform: uppercase; letter-spacing: .08em; }
+  .slash { position: fixed; inset: -20% -30%; pointer-events: none; z-index: 0;
+    background: linear-gradient(115deg, transparent 46%, var(--red) 46.2%, var(--red) 53%, transparent 53.2%);
+    opacity: .12; }
+  .wrap { position: relative; z-index: 1; max-width: 1080px; margin: 0 auto; padding: 20px 20px 90px; }
+
+  .in { opacity: 0; transform: translateX(-40px) skewX(-6deg); animation: slam .45s cubic-bezier(.2,.9,.3,1.2) forwards; }
+  .in.d1 { animation-delay: .05s } .in.d2 { animation-delay: .15s }
+  .in.d3 { animation-delay: .25s } .in.d4 { animation-delay: .35s }
+  .in.d5 { animation-delay: .45s }
+  @keyframes slam { to { opacity: 1; transform: translateX(0) skewX(0); } }
+
+  nav { display: flex; align-items: center; gap: 22px; padding: 12px 0 34px; flex-wrap: wrap; }
+  .logo { font-family: "Anton", sans-serif; font-style: italic; text-transform: uppercase;
+    font-size: 26px; color: var(--ink); background: var(--paper); text-decoration: none;
+    padding: 2px 18px 4px 12px; transform: rotate(-2deg);
+    clip-path: polygon(0 12%, 96% 0, 100% 82%, 88% 100%, 4% 92%); }
+  .logo em { color: var(--red); font-style: italic; }
+  nav ul { display: flex; gap: 20px; list-style: none; margin-left: auto; }
+  nav a.tab { font-family: "Barlow Condensed", sans-serif; text-transform: uppercase; letter-spacing: .1em;
+    font-size: 18px; font-weight: 700; color: var(--paper); text-decoration: none; padding: 4px 8px;
+    transform: skewX(-8deg); display: inline-block; }
+  nav a.tab:hover, nav a.tab:focus-visible { background: var(--red); color: var(--paper); }
+  nav a.tab[aria-current] { background: var(--paper); color: var(--ink); }
+  .search { font-family: "Barlow Condensed", sans-serif; font-size: 16px; letter-spacing: .06em;
+    background: transparent; border: 2px solid var(--paper); color: var(--paper);
+    padding: 6px 14px; width: 150px; transform: skewX(-8deg); }
+  .search::placeholder { color: #f5f5f099; text-transform: uppercase; }
+  .lang { display: flex; transform: skewX(-8deg); border: 2px solid var(--paper); }
+  .lang button { font-family: "Anton", sans-serif; font-style: italic; font-size: 13px;
+    background: transparent; color: var(--paper); border: 0; padding: 6px 10px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--red); }
+  .avatar { width: 38px; height: 38px; background: var(--red); color: var(--paper);
+    font-family: "Anton", sans-serif; display: grid; place-items: center; font-size: 15px;
+    clip-path: polygon(50% 0, 100% 25%, 88% 100%, 8% 92%, 0 22%); }
+
+  .hero { position: relative; display: grid; grid-template-columns: 300px 1fr; gap: 40px; margin-bottom: 60px; }
+  .poster-stack { position: relative; }
+  .poster { height: 420px; position: relative; transform: rotate(-3deg);
+    background: linear-gradient(200deg, #2b2b2b 0%, #4d1b22 55%, var(--red-deep) 100%);
+    clip-path: polygon(2% 0, 100% 1%, 98% 99%, 0 100%);
+    display: grid; place-items: end center; padding-bottom: 26px; }
+  .poster::before { content: ""; position: absolute; inset: 0;
+    background: radial-gradient(circle, #ffffff14 1px, transparent 1.4px) 0 0 / 9px 9px; }
+  .poster::after { content: ""; position: absolute; inset: 0; z-index: -1;
+    background: var(--red); transform: translate(14px, 12px) rotate(1.5deg);
+    clip-path: polygon(2% 0, 100% 1%, 98% 99%, 0 100%); }
+  .poster .glyph { font-family: "Anton", sans-serif; font-style: italic; text-transform: uppercase;
+    color: var(--paper); font-size: 22px; letter-spacing: .04em; text-align: center; line-height: 1.05; }
+  .hero-info { padding-top: 10px; }
+  .kicker { font-family: "Barlow Condensed", sans-serif; text-transform: uppercase; letter-spacing: .3em;
+    color: var(--red); font-weight: 700; font-size: 15px; margin-bottom: 6px; }
+  h1.title { font-family: "Anton", sans-serif; font-style: italic; text-transform: uppercase;
+    font-size: clamp(40px, 6.4vw, 76px); line-height: .92; color: var(--paper);
+    text-shadow: 4px 4px 0 var(--red); margin-left: -4px; margin-bottom: 14px; }
+  .byline { color: #cfcfc8; margin-bottom: 16px; }
+  .byline b { color: var(--paper); }
+  .chips { display: flex; gap: 10px; margin-bottom: 20px; }
+  .chip { font-family: "Barlow Condensed", sans-serif; text-transform: uppercase; font-weight: 700;
+    letter-spacing: .1em; font-size: 14px; padding: 4px 14px;
+    background: var(--paper); color: var(--ink); transform: skewX(-10deg); }
+  .chip.red { background: var(--red); color: var(--paper); }
+  .synopsis { max-width: 52ch; color: #d9d9d2; margin-bottom: 22px; }
+  .stats { display: flex; gap: 30px; }
+  .stat .n { font-family: "Anton", sans-serif; font-size: 26px; font-style: italic; }
+  .stat .l { font-family: "Barlow Condensed", sans-serif; text-transform: uppercase;
+    letter-spacing: .12em; font-size: 13px; color: #9c9c94; }
+
+  .stamp { position: absolute; top: -18px; right: -6px; width: 168px; height: 168px;
+    background: var(--red); color: var(--paper); transform: rotate(8deg);
+    clip-path: polygon(50% 0%, 61% 9%, 75% 4%, 80% 17%, 94% 17%, 92% 31%, 100% 39%,
+      92% 50%, 100% 61%, 90% 69%, 94% 83%, 80% 83%, 75% 96%, 61% 91%, 50% 100%,
+      39% 91%, 25% 96%, 20% 83%, 6% 83%, 10% 69%, 0% 61%, 8% 50%, 0% 39%, 8% 31%, 6% 17%, 20% 17%, 25% 4%, 39% 9%);
+    display: grid; place-items: center; text-align: center;
+    box-shadow: 10px 12px 0 #00000066; }
+  .stamp .in-stamp { transform: rotate(-8deg); }
+  .stamp .n { font-family: "Anton", sans-serif; font-size: 58px; font-style: italic; line-height: 1; }
+  .stamp .l { font-family: "Barlow Condensed", sans-serif; text-transform: uppercase;
+    font-size: 12px; letter-spacing: .2em; font-weight: 700; }
+
+  .actions { display: flex; gap: 16px; margin-bottom: 26px; flex-wrap: wrap; }
+  .btn { font-family: "Anton", sans-serif; font-style: italic; text-transform: uppercase;
+    font-size: 16px; letter-spacing: .04em; cursor: pointer; border: none;
+    padding: 12px 24px; transform: skewX(-8deg);
+    background: var(--paper); color: var(--ink);
+    clip-path: polygon(3% 8%, 100% 0, 97% 90%, 0 100%);
+    transition: transform .12s ease, background .12s ease; }
+  .btn.primary { background: var(--red); color: var(--paper); }
+  .btn:hover, .btn:focus-visible { transform: skewX(-8deg) scale(1.06) rotate(-1deg); }
+  .btn:focus-visible { outline: 3px solid var(--paper); outline-offset: 3px; }
+
+  .mid-row { display: flex; gap: 34px; align-items: flex-start; flex-wrap: wrap; margin-bottom: 60px; }
+  .histo { max-width: 520px; flex: 1 1 320px; }
+  .histo .cond { color: #9c9c94; font-size: 14px; font-weight: 700; margin-bottom: 12px; }
+  .bars { display: flex; align-items: flex-end; gap: 6px; height: 90px; }
+  .bar { flex: 1; background: var(--paper); transform: skewX(-8deg); min-height: 6px; }
+  .bar:nth-child(n+8) { background: var(--red); }
+  .bar-scale { display: flex; justify-content: space-between; margin-top: 8px;
+    font-family: "Barlow Condensed", sans-serif; color: #9c9c94; font-size: 14px; }
+
+  /* Tu puntuación */
+  .you { background: var(--paper); color: var(--ink); padding: 20px 26px;
+    transform: rotate(-1.5deg); flex: 0 0 auto;
+    clip-path: polygon(2% 5%, 98% 0, 100% 94%, 3% 100%); }
+  .you .cond { font-size: 14px; font-weight: 700; color: var(--red-deep); margin-bottom: 8px; }
+  .you-inner { display: flex; align-items: center; gap: 18px; }
+  .you .n { font-family: "Anton", sans-serif; font-style: italic; font-size: 64px; line-height: 1; }
+  .you .date { font-family: "Barlow Condensed", sans-serif; text-transform: uppercase;
+    letter-spacing: .1em; font-size: 13px; color: #55554e; margin-top: 6px; }
+  .sprite-hop { animation: hop .45s steps(1, end) infinite alternate; }
+  @keyframes hop { to { transform: translateY(-6px); } }
+
+  .ticker { overflow: hidden; background: var(--red); margin: 0 -20px 60px; transform: rotate(-1.2deg); padding: 8px 0; }
+  .ticker-track { display: flex; gap: 48px; white-space: nowrap; width: max-content;
+    font-family: "Anton", sans-serif; font-style: italic; text-transform: uppercase;
+    font-size: 20px; color: var(--paper);
+    animation: scroll 18s linear infinite; }
+  @keyframes scroll { to { transform: translateX(-50%); } }
+
+  h2.sec { font-family: "Anton", sans-serif; font-style: italic; text-transform: uppercase;
+    font-size: 34px; margin-bottom: 26px; }
+  h2.sec span { color: var(--red); }
+  .review { background: var(--paper); color: var(--ink); max-width: 780px;
+    padding: 24px 28px; margin-bottom: 34px; position: relative;
+    clip-path: polygon(1% 4%, 99% 0, 100% 92%, 88% 96%, 84% 100%, 82% 95%, 2% 98%);
+    transform: rotate(-.8deg); }
+  .review.alt { transform: rotate(.9deg); margin-left: 60px;
+    clip-path: polygon(0 6%, 98% 0, 99% 96%, 20% 100%, 16% 94%, 12% 99%, 1% 95%); }
+  .review-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 10px; }
+  .review-head .name { font-family: "Barlow Condensed", sans-serif; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .08em; font-size: 17px; }
+  .review-head .likes { margin-left: auto; color: var(--red-deep); font-weight: 600; font-size: 15px; }
+  .rscore { font-family: "Anton", sans-serif; font-style: italic; background: var(--ink); color: var(--paper);
+    padding: 1px 10px; transform: skewX(-8deg) rotate(-2deg); display: inline-block; font-size: 16px; }
+  .review p { max-width: 66ch; }
+
+  .trending { display: grid; grid-template-columns: repeat(5, 1fr); gap: 20px; }
+  .card { text-decoration: none; color: var(--paper); }
+  .card .mini { height: 160px; display: grid; place-items: center; margin-bottom: 10px;
+    font-family: "Anton", sans-serif; font-style: italic; font-size: 22px; color: var(--paper);
+    clip-path: polygon(4% 2%, 98% 0, 100% 96%, 2% 100%);
+    transition: transform .15s ease; text-align: center; }
+  .card:nth-child(odd) .mini { transform: rotate(-2deg); }
+  .card:nth-child(even) .mini { transform: rotate(2deg); }
+  .card:hover .mini, .card:focus-visible .mini { transform: rotate(0) scale(1.05); outline: 3px solid var(--red); }
+  .card .t { font-family: "Barlow Condensed", sans-serif; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .06em; display: block; }
+  .card .kind { font-family: "Barlow Condensed", sans-serif; font-size: 13px; color: #9c9c94;
+    text-transform: uppercase; letter-spacing: .14em; }
+  .g1 { background: linear-gradient(200deg, #333, #14476b); }
+  .g2 { background: linear-gradient(200deg, #333, #0d6b58); }
+  .g3 { background: linear-gradient(200deg, #4d3a14, #b06d1f); }
+  .g4 { background: linear-gradient(200deg, #33131f, var(--red-deep)); }
+  .g5 { background: linear-gradient(200deg, #16281e, #21694a); }
+
+  footer { margin-top: 80px; text-align: center; color: #9c9c94; }
+  footer .display { color: var(--red); font-size: 20px; margin-top: 6px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+    .in { opacity: 1; transform: none; }
+  }
+  @media (max-width: 800px) {
+    .hero { grid-template-columns: 1fr; }
+    .poster-stack { max-width: 300px; }
+    .stamp { top: auto; bottom: -30px; right: 10px; width: 130px; height: 130px; }
+    .stamp .n { font-size: 42px; }
+    .review.alt { margin-left: 0; }
+    .trending { grid-template-columns: repeat(2, 1fr); }
+    nav ul { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="slash" aria-hidden="true"></div>
+<div class="wrap">
+
+  <nav class="in d1">
+    <a class="logo" href="#">Quest<em>Log</em></a>
+    <ul>
+      <li><a class="tab" href="#" aria-current="page">Películas</a></li>
+      <li><a class="tab" href="#">Series</a></li>
+      <li><a class="tab" href="#">Juegos</a></li>
+      <li><a class="tab" href="#">Listas</a></li>
+      <li><a class="tab" href="#">Diario</a></li>
+    </ul>
+    <input class="search" type="search" placeholder="Buscar…" aria-label="Buscar títulos">
+    <div class="lang" role="group" aria-label="Idioma">
+      <button aria-pressed="true">ES</button>
+      <button aria-pressed="false">EN</button>
+    </div>
+    <div class="avatar" aria-label="Tu perfil">AM</div>
+  </nav>
+
+  <section class="hero">
+    <div class="poster-stack in d2">
+      <div class="poster" role="img" aria-label="Cartel de El viaje de Chihiro">
+        <span class="glyph">El viaje<br>de Chihiro</span>
+      </div>
+      <div class="stamp" aria-label="Puntuación media 9,2 de 10">
+        <div class="in-stamp">
+          <div class="n">9,2</div>
+          <div class="l">Media</div>
+        </div>
+      </div>
+    </div>
+    <div class="hero-info">
+      <p class="kicker in d2">Película · 2001 · Studio Ghibli</p>
+      <h1 class="title in d3">El viaje<br>de Chihiro</h1>
+      <p class="byline in d3">Dirigida por <b>Hayao Miyazaki</b> · 125 min</p>
+      <div class="chips in d4">
+        <span class="chip red">Animación</span>
+        <span class="chip">Fantasía</span>
+        <span class="chip">Aventura</span>
+      </div>
+      <p class="synopsis in d4">Chihiro se adentra en un mundo de espíritus y deberá trabajar en una
+        casa de baños para los dioses si quiere liberar a sus padres — y recordar su propio nombre.</p>
+      <div class="actions in d4">
+        <button class="btn primary">Registrar</button>
+        <button class="btn">Reseña</button>
+        <button class="btn">Pendientes</button>
+        <button class="btn">+ Lista</button>
+      </div>
+      <div class="stats in d5">
+        <div class="stat"><div class="n">12,4k</div><div class="l">Vistas</div></div>
+        <div class="stat"><div class="n">3,2k</div><div class="l">Reseñas</div></div>
+        <div class="stat"><div class="n">890</div><div class="l">Listas</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="mid-row in d5">
+    <div class="histo">
+      <div class="cond">Distribución — 3.214 valoraciones</div>
+      <div class="bars" aria-hidden="true">
+        <div class="bar" style="height:6%"></div><div class="bar" style="height:4%"></div>
+        <div class="bar" style="height:5%"></div><div class="bar" style="height:8%"></div>
+        <div class="bar" style="height:12%"></div><div class="bar" style="height:18%"></div>
+        <div class="bar" style="height:34%"></div><div class="bar" style="height:58%"></div>
+        <div class="bar" style="height:82%"></div><div class="bar" style="height:100%"></div>
+      </div>
+      <div class="bar-scale"><span>1</span><span>10</span></div>
+    </div>
+    <div class="you">
+      <div class="cond">Tu puntuación</div>
+      <div class="you-inner">
+        <div class="sprite-hop" data-sprite="cheer" data-px="3" aria-label="Tu avatar celebra tu puntuación"></div>
+        <div>
+          <div class="n">9</div>
+          <div class="date">Vista el 12 · 07 · 26</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="ticker" aria-hidden="true">
+    <div class="ticker-track">
+      <span>En cartelera</span><span>★</span><span>Ahora jugando</span><span>★</span>
+      <span>Registra tu aventura</span><span>★</span><span>En cartelera</span><span>★</span>
+      <span>Ahora jugando</span><span>★</span><span>Registra tu aventura</span><span>★</span>
+    </div>
+  </div>
+
+  <h2 class="sec">Reseñas <span>recientes</span></h2>
+
+  <article class="review">
+    <div class="review-head">
+      <span class="name">@nekomata</span>
+      <span class="rscore">10 / 10</span>
+      <span class="likes">♥ 234</span>
+    </div>
+    <p>Una casa de baños para el alma. Cada fotograma es un punto de guardado al que quiero volver.
+      Veinte años después, Sin Cara sigue siendo el mejor personaje mudo del cine.</p>
+  </article>
+
+  <article class="review alt">
+    <div class="review-head">
+      <span class="name">@pixelgriffin</span>
+      <span class="rscore">9 / 10</span>
+      <span class="likes">♥ 156</span>
+    </div>
+    <p>La vi la misma noche que terminé Sea of Stars y las dos se mezclan de la mejor manera:
+      cálida, extraña y un poco triste. La secuencia del tren justifica sola la puntuación.</p>
+  </article>
+
+  <h2 class="sec">Tenden<span>cias</span></h2>
+  <div class="trending">
+    <a class="card" href="#"><span class="mini g1">Chihiro</span><span class="t">El viaje de Chihiro</span><span class="kind">Película</span></a>
+    <a class="card" href="#"><span class="mini g2">SoS</span><span class="t">Sea of Stars</span><span class="kind">Juego</span></a>
+    <a class="card" href="#"><span class="mini g3">Dune II</span><span class="t">Dune: Parte Dos</span><span class="kind">Película</span></a>
+    <a class="card" href="#"><span class="mini g4">Hades II</span><span class="t">Hades II</span><span class="kind">Juego</span></a>
+    <a class="card" href="#"><span class="mini g5">Silksong</span><span class="t">Silksong</span><span class="kind">Juego</span></a>
+  </div>
+
+  <footer>
+    <p>Tu diario de aventuras para todo lo que ves y juegas.</p>
+    <p class="display">Tómate tu tiempo.</p>
+  </footer>
+</div>
+<script src="sprite.js"></script>
+</body>
+</html>

@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Dirección C: Híbrido pixel-moderno (verde ⇄ azul)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0e1116;
+    --panel: #171c24;
+    --panel-2: #1d232e;
+    --line: #262d38;
+    --text: #e6e9ee;
+    --muted: #8a93a3;
+    --accent: #9df164;         /* XP green */
+    --accent-deep: #6fbf3e;
+    --accent-ink: #10230a;
+    --lav: #b3a6ff;
+    --amber: #ffd166;
+  }
+  :root[data-accent="blue"] {
+    --accent: #7ea2ff;         /* FF blue (de la dirección A) */
+    --accent-deep: #4a6fd4;
+    --accent-ink: #0b1430;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: var(--bg); }
+  body { font-family: "Inter", sans-serif; font-size: 15.5px; line-height: 1.6;
+    color: var(--text); background: var(--bg); min-height: 100vh; }
+  .px { font-family: "Silkscreen", monospace; }
+  .mono { font-family: "JetBrains Mono", monospace; }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 24px 80px; }
+
+  nav { display: flex; align-items: center; gap: 26px; padding: 14px 0 34px; border-bottom: 1px solid var(--line); margin-bottom: 36px; flex-wrap: wrap; }
+  .logo { font-family: "Silkscreen", monospace; font-size: 17px; color: var(--text); text-decoration: none; }
+  .logo .cursor { display: inline-block; width: 9px; height: 16px; background: var(--accent);
+    vertical-align: -2px; margin-left: 4px; animation: blink 1.1s steps(2) infinite; }
+  @keyframes blink { 50% { opacity: 0; } }
+  nav ul { display: flex; gap: 24px; list-style: none; }
+  nav a.link { color: var(--muted); text-decoration: none; font-weight: 500; font-size: 14.5px; padding-bottom: 2px; }
+  nav a.link:hover, nav a.link:focus-visible { color: var(--text); }
+  nav a.link[aria-current] { color: var(--accent); border-bottom: 2px solid var(--accent); }
+  .search { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: 13.5px;
+    background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    border-radius: 6px; padding: 7px 14px; width: 190px; }
+  .search::placeholder { color: var(--muted); }
+  .search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .lang { display: flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+  .lang button { font-family: "JetBrains Mono", monospace; font-size: 12px; background: var(--panel);
+    color: var(--muted); border: 0; padding: 7px 11px; cursor: pointer; }
+  .lang button[aria-pressed="true"] { background: var(--accent); color: var(--accent-ink); }
+  .accent-toggle { font-family: "JetBrains Mono", monospace; font-size: 12px; cursor: pointer;
+    background: var(--panel); color: var(--muted); border: 1px solid var(--line);
+    border-radius: 6px; padding: 7px 12px; }
+  .accent-toggle:hover { color: var(--text); border-color: var(--muted); }
+  .accent-toggle { display: flex; gap: 6px; align-items: center; }
+  .accent-toggle .sw { width: 13px; height: 13px; border-radius: 3px; }
+  .accent-toggle .sw-green { background: #9df164; }
+  .accent-toggle .sw-blue { background: #7ea2ff; }
+  :root[data-accent="green"] .accent-toggle .sw-green,
+  :root[data-accent="blue"] .accent-toggle .sw-blue { outline: 2px solid var(--text); outline-offset: 1px; }
+  :root[data-accent="green"] .accent-toggle .sw-blue,
+  :root[data-accent="blue"] .accent-toggle .sw-green { opacity: .45; }
+  .avatar { width: 34px; height: 34px; border-radius: 6px; background: var(--lav); color: var(--bg);
+    font-family: "Silkscreen", monospace; font-size: 11px; display: grid; place-items: center; }
+
+  .hero { display: grid; grid-template-columns: 250px 1fr; gap: 36px; margin-bottom: 44px; }
+  .poster-frame { position: relative; align-self: start; border-radius: 8px; overflow: hidden; border: 1px solid var(--line); }
+  .poster { height: 360px;
+    background:
+      radial-gradient(circle at 68% 20%, #f2e2a0 0 24px, transparent 25px),
+      linear-gradient(180deg, #23355c 0%, #3f5f8a 48%, #a05a68 80%, #58405e 100%); }
+  .poster-frame::before { content: ""; position: absolute; inset: 0;
+    background: repeating-conic-gradient(#0000 0% 25%, #0e111640 0% 50%) 0 0 / 5px 5px; }
+  .poster-frame::after { content: ""; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, #0000 0 3px, #0e111626 3px 4px); }
+  .poster-frame .badge { position: absolute; top: 10px; left: 10px; z-index: 1;
+    font-family: "Silkscreen", monospace; font-size: 9px; color: var(--bg);
+    background: var(--amber); padding: 3px 8px; border-radius: 3px; }
+  .kicker { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--lav);
+    text-transform: uppercase; letter-spacing: .14em; margin-bottom: 10px; }
+  h1 { font-family: "Silkscreen", monospace; font-size: clamp(24px, 3.6vw, 34px); font-weight: 700;
+    line-height: 1.15; margin-bottom: 10px; }
+  .byline { color: var(--muted); margin-bottom: 16px; }
+  .byline b { color: var(--text); font-weight: 500; }
+  .chips { display: flex; gap: 8px; margin-bottom: 18px; }
+  .chip { font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted);
+    border: 1px solid var(--line); border-radius: 4px; padding: 3px 10px; }
+  .synopsis { max-width: 58ch; color: #c3c9d4; margin-bottom: 22px; }
+
+  .xp-block { max-width: 560px; margin-bottom: 22px; }
+  .xp-head { display: flex; align-items: baseline; gap: 12px; margin-bottom: 8px; }
+  .xp-head .n { font-family: "Silkscreen", monospace; font-size: 30px; color: var(--accent); }
+  .xp-head .of { font-family: "JetBrains Mono", monospace; color: var(--muted); font-size: 13px; }
+  .xp-head .count { margin-left: auto; font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: var(--muted); }
+  .xp-bar { display: flex; gap: 3px; height: 16px; }
+  .xp-seg { flex: 1; background: var(--panel-2); border: 1px solid var(--line); }
+  .xp-seg.full { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 -4px 0 var(--accent-deep); }
+  .xp-seg.part { background: linear-gradient(90deg, var(--accent) 20%, var(--panel-2) 20%); }
+  .xp-sub { display: flex; justify-content: space-between; font-family: "JetBrains Mono", monospace;
+    font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+
+  .actions { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn { font-family: "Inter", sans-serif; font-weight: 600; font-size: 14px; cursor: pointer;
+    background: var(--panel); color: var(--text); border: 1px solid var(--line);
+    border-radius: 6px; padding: 9px 18px; }
+  .btn.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
+  .btn:hover { border-color: var(--muted); }
+  .btn.primary:hover { filter: brightness(1.08); }
+  .btn:focus-visible { outline: 2px solid var(--lav); outline-offset: 2px; }
+
+  .cols { display: grid; grid-template-columns: 1fr 300px; gap: 36px; }
+  h2 { font-family: "Silkscreen", monospace; font-size: 15px; font-weight: 400;
+    color: var(--text); margin-bottom: 18px; }
+  h2::before { content: "▸ "; color: var(--accent); }
+
+  .review { background: var(--panel); border: 1px solid var(--line); border-radius: 8px;
+    padding: 18px 20px; margin-bottom: 14px; }
+  .review-head { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+  .mini-avatar { width: 26px; height: 26px; border-radius: 5px;
+    font-family: "Silkscreen", monospace; font-size: 9px; color: var(--bg);
+    display: grid; place-items: center; }
+  .review-head .name { font-family: "JetBrains Mono", monospace; font-size: 13px; color: var(--lav); }
+  .pips { margin-left: auto; display: flex; gap: 2px; }
+  .pip { width: 9px; height: 9px; background: var(--panel-2); border: 1px solid var(--line); }
+  .pip.on { background: var(--accent); border-color: var(--accent); }
+  .review p { color: #c3c9d4; font-size: 14.5px; max-width: 70ch; }
+  .review-foot { display: flex; gap: 16px; margin-top: 10px;
+    font-family: "JetBrains Mono", monospace; font-size: 12px; color: var(--muted); }
+  .review-foot .likes { color: var(--amber); }
+
+  /* Tu puntuación */
+  .you { background: var(--panel); border: 1px solid var(--accent); border-radius: 8px;
+    padding: 16px 18px; margin-bottom: 24px; }
+  .you-inner { display: flex; align-items: center; gap: 16px; }
+  .you .n { font-family: "Silkscreen", monospace; font-size: 40px; color: var(--accent); line-height: 1; }
+  .you .date { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); margin-top: 6px; }
+  .you .edit { margin-top: 10px; font-size: 12.5px; padding: 5px 12px; }
+  .sprite-hop { animation: hop .45s steps(1, end) infinite alternate; }
+  @keyframes hop { to { transform: translateY(-6px); } }
+
+  .histo { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; margin-bottom: 24px; }
+  .bars { display: flex; align-items: flex-end; gap: 4px; height: 72px; }
+  .bar { flex: 1; background: var(--panel-2); border-top: 2px solid var(--lav); min-height: 4px; }
+  .bar:nth-child(n+8) { border-top-color: var(--accent); }
+  .bar-scale { display: flex; justify-content: space-between; font-family: "JetBrains Mono", monospace;
+    font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  .feed-item { display: flex; gap: 10px; padding: 12px 0; border-bottom: 1px solid var(--line);
+    font-size: 13.5px; color: var(--muted); }
+  .feed-item .mini-avatar { flex-shrink: 0; }
+  .feed-item b { color: var(--text); font-weight: 500; }
+  .feed-item .t { color: var(--lav); }
+  .feed-item .when { display: block; font-family: "JetBrains Mono", monospace; font-size: 11px; margin-top: 2px; }
+
+  .trending { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-top: 44px; }
+  .card { text-decoration: none; color: var(--text); }
+  .card .mini { position: relative; height: 150px; border-radius: 6px; border: 1px solid var(--line);
+    overflow: hidden; display: grid; place-items: center; margin-bottom: 8px;
+    font-family: "Silkscreen", monospace; font-size: 15px; color: #fff; }
+  .card .mini::after { content: ""; position: absolute; inset: 0;
+    background: repeating-conic-gradient(#0000 0% 25%, #0e111633 0% 50%) 0 0 / 4px 4px; }
+  .card:hover .mini, .card:focus-visible .mini { outline: 2px solid var(--accent); outline-offset: -2px; }
+  .card .t { font-size: 13.5px; font-weight: 500; display: block; }
+  .card .kind { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); }
+  .h1c { background: linear-gradient(165deg, #2b3a72, #7fb3d5); }
+  .h2c { background: linear-gradient(165deg, #14265c, #29c3a6); }
+  .h3c { background: linear-gradient(165deg, #6e3b1c, #d8a24a); }
+  .h4c { background: linear-gradient(165deg, #3d1d4f, #c94f6d); }
+  .h5c { background: linear-gradient(165deg, #1c3a2d, #74c69d); }
+
+  footer { margin-top: 60px; border-top: 1px solid var(--line); padding-top: 24px;
+    color: var(--muted); font-size: 13.5px; display: flex; justify-content: space-between; }
+  footer .px { font-size: 10px; color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; }
+    .poster-frame { max-width: 250px; }
+    .cols { grid-template-columns: 1fr; }
+    .trending { grid-template-columns: repeat(2, 1fr); }
+    .search { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <a class="logo" href="#">QUESTLOG<span class="cursor" aria-hidden="true"></span></a>
+    <ul>
+      <li><a class="link" href="#" aria-current="page">Películas</a></li>
+      <li><a class="link" href="#">Series</a></li>
+      <li><a class="link" href="#">Juegos</a></li>
+      <li><a class="link" href="#">Listas</a></li>
+      <li><a class="link" href="#">Diario</a></li>
+    </ul>
+    <input class="search" type="search" placeholder="/ buscar títulos" aria-label="Buscar títulos">
+    <div class="lang" role="group" aria-label="Idioma">
+      <button aria-pressed="true">ES</button>
+      <button aria-pressed="false">EN</button>
+    </div>
+    <button class="accent-toggle" id="accentToggle" aria-label="Cambiar color de acento" title="Color de acento">
+      <span class="sw sw-green" aria-hidden="true"></span><span class="sw sw-blue" aria-hidden="true"></span>
+    </button>
+    <div class="avatar" aria-label="Tu perfil">AM</div>
+  </nav>
+
+  <section class="hero">
+    <div class="poster-frame">
+      <span class="badge">PELÍCULA</span>
+      <div class="poster" role="img" aria-label="Cartel de El viaje de Chihiro"></div>
+    </div>
+    <div>
+      <p class="kicker">2001 · Studio Ghibli · 125 min</p>
+      <h1>El viaje de Chihiro</h1>
+      <p class="byline">Dirigida por <b>Hayao Miyazaki</b></p>
+      <div class="chips">
+        <span class="chip">animación</span>
+        <span class="chip">fantasía</span>
+        <span class="chip">aventura</span>
+      </div>
+      <p class="synopsis">Chihiro se adentra en un mundo de espíritus y deberá trabajar en una casa
+        de baños para los dioses si quiere liberar a sus padres — y recordar su propio nombre.</p>
+
+      <div class="xp-block">
+        <div class="xp-head">
+          <span class="n">9.2</span>
+          <span class="of">/ 10</span>
+          <span class="count">3.214 valoraciones</span>
+        </div>
+        <div class="xp-bar" role="img" aria-label="Puntuación media 9,2 de 10">
+          <div class="xp-seg full"></div><div class="xp-seg full"></div><div class="xp-seg full"></div>
+          <div class="xp-seg full"></div><div class="xp-seg full"></div><div class="xp-seg full"></div>
+          <div class="xp-seg full"></div><div class="xp-seg full"></div><div class="xp-seg full"></div>
+          <div class="xp-seg part"></div>
+        </div>
+        <div class="xp-sub"><span>puntuación del grupo</span><span>12.4k vistas · 890 listas</span></div>
+      </div>
+
+      <div class="actions">
+        <button class="btn primary">Registrar</button>
+        <button class="btn">Escribir reseña</button>
+        <button class="btn">Pendientes</button>
+        <button class="btn">+ Lista</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="cols">
+    <section>
+      <h2>RESEÑAS RECIENTES</h2>
+
+      <article class="review">
+        <div class="review-head">
+          <div class="mini-avatar" style="background:var(--accent)">N</div>
+          <span class="name">@nekomata</span>
+          <div class="pips" aria-label="Puntuación 10 de 10">
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span>
+          </div>
+        </div>
+        <p>Una casa de baños para el alma. Cada fotograma es un punto de guardado al que quiero volver.
+          Veinte años después, Sin Cara sigue siendo el mejor personaje mudo del cine.</p>
+        <div class="review-foot"><span class="likes">♥ 234</span><span>18 respuestas</span><span>hace 2 días</span></div>
+      </article>
+
+      <article class="review">
+        <div class="review-head">
+          <div class="mini-avatar" style="background:var(--amber)">P</div>
+          <span class="name">@pixelgriffin</span>
+          <div class="pips" aria-label="Puntuación 9 de 10">
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip on"></span><span class="pip on"></span><span class="pip on"></span>
+            <span class="pip"></span>
+          </div>
+        </div>
+        <p>La vi la misma noche que terminé Sea of Stars y las dos se mezclan de la mejor manera:
+          cálida, extraña y un poco triste. La secuencia del tren justifica sola la puntuación.</p>
+        <div class="review-foot"><span class="likes">♥ 156</span><span>9 respuestas</span><span>hace 5 días</span></div>
+      </article>
+    </section>
+
+    <aside>
+      <h2>TU PUNTUACIÓN</h2>
+      <div class="you">
+        <div class="you-inner">
+          <div class="sprite-hop" data-sprite="cheer" data-px="3" aria-label="Tu avatar celebra tu puntuación"></div>
+          <div>
+            <div class="n">9</div>
+            <div class="date">vista: 12 jul 2026</div>
+            <button class="btn edit">Editar</button>
+          </div>
+        </div>
+      </div>
+
+      <h2>DISTRIBUCIÓN</h2>
+      <div class="histo">
+        <div class="bars" aria-hidden="true">
+          <div class="bar" style="height:6%"></div><div class="bar" style="height:4%"></div>
+          <div class="bar" style="height:5%"></div><div class="bar" style="height:8%"></div>
+          <div class="bar" style="height:12%"></div><div class="bar" style="height:18%"></div>
+          <div class="bar" style="height:34%"></div><div class="bar" style="height:58%"></div>
+          <div class="bar" style="height:82%"></div><div class="bar" style="height:100%"></div>
+        </div>
+        <div class="bar-scale"><span>1</span><span>10</span></div>
+      </div>
+
+      <h2>ACTIVIDAD DEL GRUPO</h2>
+      <div class="feed-item">
+        <div class="mini-avatar" style="background:var(--lav)">R</div>
+        <div><b>@rvargas</b> registró <span class="t">Hades II</span>
+          <span class="when">hace 34 min</span></div>
+      </div>
+      <div class="feed-item">
+        <div class="mini-avatar" style="background:var(--accent)">N</div>
+        <div><b>@nekomata</b> reseñó <span class="t">Dune: Parte Dos</span> · 8/10
+          <span class="when">hace 2 h</span></div>
+      </div>
+      <div class="feed-item">
+        <div class="mini-avatar" style="background:var(--amber)">P</div>
+        <div><b>@pixelgriffin</b> añadió <span class="t">Silksong</span> a pendientes
+          <span class="when">hace 6 h</span></div>
+      </div>
+    </aside>
+  </div>
+
+  <h2 style="margin-top:44px">TENDENCIAS</h2>
+  <div class="trending" style="margin-top:0">
+    <a class="card" href="#"><span class="mini h1c">CH</span><span class="t">El viaje de Chihiro</span><span class="kind">película</span></a>
+    <a class="card" href="#"><span class="mini h2c">SoS</span><span class="t">Sea of Stars</span><span class="kind">juego</span></a>
+    <a class="card" href="#"><span class="mini h3c">D2</span><span class="t">Dune: Parte Dos</span><span class="kind">película</span></a>
+    <a class="card" href="#"><span class="mini h4c">HII</span><span class="t">Hades II</span><span class="kind">juego</span></a>
+    <a class="card" href="#"><span class="mini h5c">SS</span><span class="t">Silksong</span><span class="kind">juego</span></a>
+  </div>
+
+  <footer>
+    <span>Tu diario de aventuras para todo lo que ves y juegas.</span>
+    <span class="px">PARTIDA GUARDADA ▮</span>
+  </footer>
+</div>
+<script src="sprite.js"></script>
+<script>
+  document.getElementById('accentToggle').addEventListener('click', () => {
+    const root = document.documentElement;
+    root.dataset.accent = root.dataset.accent === 'blue' ? 'green' : 'blue';
+  });
+</script>
+</body>
+</html>
