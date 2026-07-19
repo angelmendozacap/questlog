@@ -100,9 +100,11 @@
 
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  document.querySelectorAll('[data-sprite]').forEach((el) => {
+  function mount(el) {
     const anim = ANIMS[el.dataset.sprite] || ANIMS.idle;
     const px = +(el.dataset.px || 3);
+    if (el._qlTimer) clearInterval(el._qlTimer);
+    el.replaceChildren();
     el.style.position = 'relative';
     el.style.width = 16 * px + 'px';
     el.style.height = 21 * px + 'px';
@@ -112,11 +114,14 @@
     const frames = anim.map((m) => toShadow(m, px));
     let i = 0;
     inner.style.boxShadow = frames[0];
-    if (!reduced) {
-      setInterval(() => {
+    if (!reduced && frames.length > 1) {
+      el._qlTimer = setInterval(() => {
         i = (i + 1) % frames.length;
         inner.style.boxShadow = frames[i];
       }, 430);
     }
-  });
+  }
+
+  document.querySelectorAll('[data-sprite]').forEach(mount);
+  window.QLSprite = { mount };
 })();

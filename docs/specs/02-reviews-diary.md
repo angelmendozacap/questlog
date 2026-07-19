@@ -2,7 +2,7 @@
 
 **Status:** draft (pending approval)
 **Context:** `backend/internal/review`
-**UI source of truth:** `f-hybrid-plata.html` ("Tu puntuación", reseñas, distribución), `v-resena.html` (reseña completa), `f-diario-plata.html` (diario privado)
+**UI source of truth:** `f-hybrid-plata.html` ("Tu puntuación", reseñas, distribución), `v-registrar.html` (composer de registro/reseña), `v-resena.html` (reseña completa), `f-diario-plata.html` (diario privado)
 **Build phase:** 5
 
 ## Problem
@@ -26,6 +26,10 @@ Chosen over 5 stars with halves: matches gaming culture and both mockup componen
   optional `rating` link, optional `review` link, optional metadata: `platform/venue`
   (free text: "PC", "cine", "en casa"), `hours` (games), `in_progress: bool` (games:
   "en curso", no score required while true). Multiple entries per title allowed (rewatches).
+  - **`personal_note?`** (text): how the user *lived* the experience — who they were
+    with, what they felt, what was going on that day. Distinct from the review (which
+    judges the title). **Always private**: rendered only in the owner's diary,
+    regardless of the entry's `private` flag.
 - **Review** (aggregate root): `user`, `title`, `text` (markdown-lite), `spoiler: bool`,
   `created/edited_at`. **One review per user per title** in v1 (editable; rewatch context
   comes from the diary, e.g. "3.ª vez que la ve"). A review always carries the user's
@@ -44,6 +48,10 @@ The diary **page** (goals, streaks, stats) is private — it's the user's manage
 Each diary entry has a `private: bool` (default `false`); private entries never appear
 in feeds or the public profile.
 
+`personal_note` is a stricter tier: **always private**, even on public entries. It is
+excluded from every API response except `GET /me/diary`, never travels in domain events,
+and never reaches feeds, profiles or admins (it's not reportable content).
+
 ## API surface (public API)
 
 | Method | Path | Notes |
@@ -54,7 +62,7 @@ in feeds or the public profile.
 | GET | `/reviews/{id}` | Full review (page 4 of mockups) |
 | PATCH / DELETE | `/reviews/{id}` | Author only |
 | GET | `/me/diary?year=&kind=` | Private; entries grouped by month + year stats |
-| POST | `/diary/entries` | `{ titleId, date, rewatch?, rating?, reviewId?, platform?, hours?, inProgress?, private? }` |
+| POST | `/diary/entries` | `{ titleId, date, rewatch?, rating?, reviewId?, platform?, hours?, inProgress?, private?, personalNote? }` |
 | PATCH / DELETE | `/diary/entries/{id}` | Author only |
 | GET | `/users/{username}/diary` | Public, non-private entries only (profile tab) |
 

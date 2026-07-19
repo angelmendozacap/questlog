@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="es" data-accent="green">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QuestLog — Vista: Registrar y reseñar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="f-base.css">
+<style>
+  /* La vista es un modal sobre la página de detalle atenuada */
+  body { display: grid; place-items: start center; padding: 40px 16px 60px;
+    background:
+      radial-gradient(ellipse 60% 40% at 30% 10%, #23355c33 0%, transparent 60%),
+      var(--bg); }
+  .modal { width: min(640px, 94vw); padding: 26px 28px; }
+  .m-head { display: flex; gap: 16px; align-items: center; margin-bottom: 22px; }
+  .m-head .mini { width: 52px; height: 68px; font-size: 8px; flex-shrink: 0; }
+  .m-head .k { font-family: "JetBrains Mono", monospace; font-size: 11.5px; color: var(--muted); }
+  .m-head .close { margin-left: auto; align-self: flex-start; }
+  .flabel { font-family: "Silkscreen", monospace; font-size: 10px; color: var(--muted);
+    letter-spacing: .08em; display: block; margin: 20px 0 8px; }
+  .flabel:first-of-type { margin-top: 0; }
+  .row-fields { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+  .row-fields input.text { width: auto; }
+  .check { display: flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--muted); cursor: pointer; }
+  .check input { accent-color: var(--accent); width: 15px; height: 15px; }
+
+  /* puntuación interactiva */
+  .rate-box { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
+  .rate-pips { display: flex; gap: 5px; }
+  .rate-pips button { width: 26px; height: 26px; cursor: pointer; background: var(--panel-2);
+    border: 1px solid var(--line); padding: 0; }
+  .rate-pips button.on { background: var(--accent); border-color: var(--accent);
+    box-shadow: inset 0 -5px 0 var(--accent-deep); }
+  .rate-pips button:hover { border-color: var(--muted); }
+  .rate-pips button:focus-visible { outline: 2px solid var(--lav); outline-offset: 2px; }
+  .rate-val { font-family: "Silkscreen", monospace; font-size: 34px; color: var(--accent); min-width: 52px; }
+  .rate-val .of { font-size: 14px; color: var(--muted); }
+  .sprite-stage { min-height: 70px; display: flex; align-items: flex-end; }
+  .rate-hint { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--muted); margin-top: 6px; }
+
+  textarea.text { resize: vertical; }
+  .pnote-label { color: var(--amber); }
+  .pnote-box { border: 1px dashed color-mix(in srgb, var(--amber) 50%, transparent);
+    background: color-mix(in srgb, var(--amber) 4%, var(--panel-2)); }
+  .pnote-hint { font-family: "JetBrains Mono", monospace; font-size: 11px; color: var(--amber);
+    margin-top: 6px; opacity: .85; }
+
+  .m-foot { display: flex; align-items: center; gap: 14px; margin-top: 26px;
+    padding-top: 18px; border-top: 1px solid var(--frame-faint); flex-wrap: wrap; }
+  .m-foot .btn.primary { margin-left: auto; }
+</style>
+</head>
+<body>
+<div class="panel-you modal">
+  <div class="m-head">
+    <span class="mini p1">EL VIAJE DE CHIHIRO</span>
+    <div>
+      <h1 class="page" style="font-size:19px">Registrar</h1>
+      <div class="k">El viaje de Chihiro · película · 2001</div>
+    </div>
+    <button class="btn small close" aria-label="Cerrar">✕</button>
+  </div>
+
+  <label class="flabel" for="f-date">CUÁNDO</label>
+  <div class="row-fields">
+    <input class="text" id="f-date" type="text" value="12 / 07 / 2026" style="width:130px" aria-label="Fecha">
+    <label class="check"><input type="checkbox" checked> revisionado ↻</label>
+    <input class="text" type="text" placeholder="dónde / plataforma" value="en casa" style="width:150px" aria-label="Dónde o plataforma">
+  </div>
+  <div class="rate-hint">Para juegos: campo de horas y opción "en curso" (sin puntuar hasta terminarlo).</div>
+
+  <label class="flabel">TU PUNTUACIÓN</label>
+  <div class="rate-box">
+    <div>
+      <div class="rate-pips" id="ratePips" role="radiogroup" aria-label="Puntuación del 1 al 10"></div>
+      <div class="rate-hint">haz clic para puntuar — tu avatar reacciona</div>
+    </div>
+    <div class="rate-val"><span id="rateNum">9</span><span class="of"> /10</span></div>
+    <div class="sprite-stage"><div id="rateSprite" data-sprite="cheer" data-px="3" aria-label="Tu avatar reacciona a la puntuación"></div></div>
+  </div>
+
+  <label class="flabel" for="f-review">RESEÑA · OPCIONAL</label>
+  <textarea class="text" id="f-review" rows="4"
+    placeholder="¿Qué te pareció? Esto es público y aparecerá en la página del título…"></textarea>
+  <label class="check" style="margin-top:8px"><input type="checkbox"> contiene spoilers</label>
+
+  <label class="flabel pnote-label" for="f-pnote">🔒 NOTA PERSONAL · OPCIONAL</label>
+  <textarea class="text pnote-box" id="f-pnote" rows="3"
+    placeholder="Cómo lo viviste: con quién estabas, qué sentiste, qué estaba pasando ese día…">La vimos con Ana en casa. El tramo del tren nos dejó callados un buen rato; salí triste y luego raramente contento.</textarea>
+  <div class="pnote-hint">Solo tú verás esta nota, en tu diario. Nunca se publica, ni siquiera si la entrada es pública.</div>
+
+  <div class="m-foot">
+    <label class="check"><input type="checkbox"> entrada privada (no aparece en tu perfil ni en feeds)</label>
+    <button class="btn">Cancelar</button>
+    <button class="btn primary">Guardar registro</button>
+  </div>
+</div>
+
+<script src="sprite.js"></script>
+<script>
+  const MOOD = s => (s >= 9 ? 'cheer' : s >= 6 ? 'idle' : 'sad');
+  const pipsEl = document.getElementById('ratePips');
+  const numEl = document.getElementById('rateNum');
+  const spriteEl = document.getElementById('rateSprite');
+  let score = 9;
+
+  function render() {
+    numEl.textContent = score;
+    numEl.parentElement.style.color = score <= 5 ? 'var(--low)' : 'var(--accent)';
+    [...pipsEl.children].forEach((b, i) => b.classList.toggle('on', i < score));
+    const mood = MOOD(score);
+    if (spriteEl.dataset.sprite !== mood) {
+      spriteEl.dataset.sprite = mood;
+      QLSprite.mount(spriteEl);
+    }
+    spriteEl.classList.toggle('sprite-hop', mood === 'cheer');
+  }
+
+  for (let i = 1; i <= 10; i++) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.setAttribute('aria-label', i + ' de 10');
+    b.addEventListener('click', () => { score = i; render(); });
+    pipsEl.appendChild(b);
+  }
+  render();
+</script>
+</body>
+</html>

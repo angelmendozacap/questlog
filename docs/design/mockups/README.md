@@ -11,6 +11,7 @@ and follow the F system: silver frames, dual accent toggle, ES-first copy.
 | 1 | Inicio (feed) | `v-home.html` | Followed activity, annual goal, follow suggestions |
 | 2 | Explorar | `v-explorar.html` | Local results + on-demand TMDB/IGDB import state |
 | 3 | Detalle | `f-hybrid-plata.html` | Aggregate score, histogram, "Tu puntuación" + avatar |
+| 3b | Registrar/Reseñar | `v-registrar.html` | Log composer modal: interactive 1–10 pips (avatar reacts live), optional review + spoiler flag, optional **private personal note** (emotions/context, diary-only) |
 | 4 | Reseña | `v-resena.html` | Full review, likes, comment thread, spoiler badge |
 | 5 | Perfil público | `v-perfil.html` | Other users' profile: bio, stats, favorites, tabs |
 | 6 | Lista | `v-lista.html` | Ranked public list, save/share, related lists |
