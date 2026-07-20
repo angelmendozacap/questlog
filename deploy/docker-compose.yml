@@ -1,0 +1,73 @@
+name: questlog
+
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: questlog
+      POSTGRES_PASSWORD: questlog
+      POSTGRES_DB: questlog
+    ports: ["5432:5432"]
+    volumes:
+      - questlog-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U questlog"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0
+    command: start-dev --import-realm
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+    ports: ["8082:8080"]
+    volumes:
+      - ./keycloak:/opt/keycloak/data/import
+    # Realm export lands in Phase 3 (docs/specs auth work); dir is empty for now.
+
+  public-api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.go
+      args: { CMD_PATH: cmd/public-api }
+    environment:
+      PORT: "8080"
+      DATABASE_URL: postgres://questlog:questlog@postgres:5432/questlog?sslmode=disable
+    ports: ["8080:8080"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  admin-api:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.go
+      args: { CMD_PATH: cmd/admin-api }
+    environment:
+      PORT: "8081"
+      DATABASE_URL: postgres://questlog:questlog@postgres:5432/questlog?sslmode=disable
+    ports: ["8081:8081"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  web:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.node
+      args: { APP: web, PORT: "3000" }
+    ports: ["3000:3000"]
+    depends_on: [public-api]
+
+  admin:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.node
+      args: { APP: admin, PORT: "3001" }
+    ports: ["3001:3001"]
+    depends_on: [admin-api]
+
+volumes:
+  questlog-postgres:

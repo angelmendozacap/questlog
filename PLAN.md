@@ -170,17 +170,22 @@ logged activity public with per-entry `private` flag (02); feed via **fan-in** (
 composes handlers owned by each context + append-only audit log (05); user suspension
 = local flag + Keycloak disable, fail-closed (05).
 
-### Phase 2 — Monorepo scaffold
+### Phase 2 — Monorepo scaffold — ✅ COMPLETED
 
-- [ ] pnpm workspace + Turborepo (`apps/*`, `packages/*`, task graph: build/dev/lint/type-check)
-- [ ] `go.work` with `backend/` + `backend/tools/`
-- [ ] Scaffold `web`, `admin` (Next.js 15), `packages/{ui,types,api-client,auth,config}`
-- [ ] i18n: next-intl in both apps — locale routing (`/es` default, `/en`), shared message catalogs, language switcher
-- [ ] Fiber skeletons for `public-api`, `admin-api`; `cmd/migrate`
-- [ ] Docker Compose: Postgres, Keycloak, both APIs, both apps; `scripts/dev.sh`
-- [ ] OpenAPI codegen pipeline (oapi-codegen + openapi-typescript) wired into turbo
-- [ ] CI skeleton: lint (golangci-lint, eslint), typecheck, test, contract-drift check, docker build
-- [ ] Root README with architecture overview + diagram (grows every phase)
+- [x] pnpm workspace + Turborepo (`apps/*`, `packages/*`, task graph: build/dev/lint/type-check)
+- [x] `go.work` with `backend/` + `backend/tools/` (tool deps via Go 1.24+ `tool` directive, not blank-import)
+- [x] Scaffold `web`, `admin` (Next.js 15), `packages/{ui,types,api-client,auth,config}`
+- [x] i18n: next-intl in both apps — locale routing (`/es` default, `/en`); language switcher deferred to Phase 4 UI work
+- [x] Fiber skeletons for `public-api`, `admin-api`; `cmd/migrate` placeholder
+- [x] Docker Compose: Postgres, Keycloak, both APIs, both apps; `scripts/dev.sh` (Keycloak realm import wired for Phase 3)
+- [x] OpenAPI codegen pipeline — **both sides wired**: `oapi-codegen` (Go, `internal/shared/api`) + `openapi-typescript` (`packages/types`), generated code committed so CI can diff it
+- [x] CI: eslint + typecheck (TS), `go vet` + `golangci-lint` + tests (Go), contract-drift check (both codegens), docker build matrix (4 images)
+- [x] Root README with architecture overview
+
+**Verified, not just built:** `pnpm turbo lint typecheck build` → 11/11 tasks green;
+`go build/vet/test -race` → green; `web` dev server actually serves `/es` (default
+locale) with real SSR content through `@questlog/ui` + Tailwind v4; `public-api` binary
+actually listens and answers `/healthz`.
 
 ### Phase 3 — Auth & identity
 
