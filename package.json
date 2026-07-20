@@ -1,0 +1,18 @@
+{
+  "name": "questlog",
+  "private": true,
+  "packageManager": "pnpm@11.5.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "generate": "turbo generate"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.0"
+  }
+}

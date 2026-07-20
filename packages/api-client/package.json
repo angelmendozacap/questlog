@@ -1,0 +1,20 @@
+{
+  "name": "@questlog/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@questlog/types": "workspace:*",
+    "openapi-fetch": "^0.13.0"
+  },
+  "devDependencies": {
+    "@questlog/config": "workspace:*",
+    "typescript": "^5.7.0"
+  }
+}

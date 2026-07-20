@@ -1,0 +1,4 @@
+{
+  "extends": "@questlog/config/tsconfig/base",
+  "include": ["src"]
+}

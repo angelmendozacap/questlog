@@ -1,8 +1,18 @@
 # OS
 .DS_Store
 
-# Dependencies (future phases)
+# Dependencies
 node_modules/
+
+# Builds
+.next/
+dist/
+.turbo/
+*.tsbuildinfo
+
+
+# Go
+backend/bin/
 
 # Env / secrets
 .env

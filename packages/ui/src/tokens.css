@@ -1,0 +1,22 @@
+/* QuestLog design tokens — system F (docs/design/tokens.md) */
+:root {
+  --ql-bg: #0e1116;
+  --ql-panel: #171c24;
+  --ql-panel-2: #1d232e;
+  --ql-line: #262d38;
+  --ql-text: #e6e9ee;
+  --ql-muted: #8a93a3;
+  --ql-accent: #9df164;
+  --ql-accent-deep: #6fbf3e;
+  --ql-accent-ink: #10230a;
+  --ql-lav: #b3a6ff;
+  --ql-amber: #ffd166;
+  --ql-low: #e07a6a;
+  --ql-frame-dim: #a9b6c91f;
+  --ql-frame-faint: #a9b6c912;
+}
+:root[data-accent="blue"] {
+  --ql-accent: #7ea2ff;
+  --ql-accent-deep: #4a6fd4;
+  --ql-accent-ink: #0b1430;
+}

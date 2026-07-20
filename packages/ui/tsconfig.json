@@ -1,0 +1,9 @@
+{
+  "extends": "@questlog/config/tsconfig/base",
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "noEmit": true
+  },
+  "include": ["src"]
+}

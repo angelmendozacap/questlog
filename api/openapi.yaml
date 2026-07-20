@@ -1,0 +1,144 @@
+openapi: 3.0.3
+info:
+  title: QuestLog API
+  description: >
+    Contract source of truth for QuestLog. Both Go binaries (public-api :8080,
+    admin-api :8081) and the TypeScript clients are generated from this file.
+    Endpoints grow per spec (docs/specs/); this is the Phase 2 seed.
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8080
+    description: public-api (local)
+
+paths:
+  /healthz:
+    get:
+      operationId: getHealth
+      summary: Liveness probe
+      tags: [system]
+      responses:
+        "200":
+          description: Service is up
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+
+  /search:
+    get:
+      operationId: searchTitles
+      summary: Search local catalog and external providers
+      tags: [catalog]
+      parameters:
+        - name: q
+          in: query
+          required: true
+          schema: { type: string, minLength: 2 }
+        - name: kind
+          in: query
+          required: false
+          schema: { $ref: "#/components/schemas/TitleKind" }
+      responses:
+        "200":
+          description: Local and external results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResults"
+
+  /titles/{titleId}:
+    get:
+      operationId: getTitle
+      summary: Title detail page data
+      tags: [catalog]
+      parameters:
+        - name: titleId
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        "200":
+          description: Title detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Title"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+components:
+  responses:
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Health:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
+
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code: { type: string }
+        message: { type: string }
+
+    TitleKind:
+      type: string
+      enum: [movie, series, game]
+
+    TitleSummary:
+      type: object
+      required: [id, kind, name, year]
+      properties:
+        id: { type: string, format: uuid }
+        kind: { $ref: "#/components/schemas/TitleKind" }
+        name: { type: string }
+        year: { type: integer }
+        posterUrl: { type: string, nullable: true }
+        avgScore: { type: number, nullable: true }
+        ratingsCount: { type: integer }
+
+    Title:
+      allOf:
+        - $ref: "#/components/schemas/TitleSummary"
+        - type: object
+          required: [genres]
+          properties:
+            originalName: { type: string, nullable: true }
+            synopsis: { type: string, nullable: true }
+            genres:
+              type: array
+              items: { type: string }
+
+    ExternalResult:
+      type: object
+      required: [source, externalId, name]
+      properties:
+        source:
+          type: string
+          enum: [tmdb_movie, tmdb_tv, igdb]
+        externalId: { type: string }
+        name: { type: string }
+        year: { type: integer, nullable: true }
+        posterUrl: { type: string, nullable: true }
+
+    SearchResults:
+      type: object
+      required: [local, external]
+      properties:
+        local:
+          type: array
+          items: { $ref: "#/components/schemas/TitleSummary" }
+        external:
+          type: array
+          items: { $ref: "#/components/schemas/ExternalResult" }
