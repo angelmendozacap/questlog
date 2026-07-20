@@ -1,0 +1,6 @@
+@import "tailwindcss";
+
+body {
+  background: var(--ql-bg);
+  color: var(--ql-text);
+}
