@@ -17,6 +17,7 @@ RUN pnpm --filter ${APP} build
 FROM base AS run
 ARG APP
 ARG PORT=3000
+ENV APP=${APP}
 ENV PORT=${PORT}
 WORKDIR /repo
 COPY --from=build /repo .
