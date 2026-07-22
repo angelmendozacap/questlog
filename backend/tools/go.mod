@@ -4,7 +4,7 @@
 // (wired in Phase 2's CI step).
 module github.com/alfredomendoza/questlog/backend/tools
 
-go 1.26.5
+go 1.24.0
 
 require (
 	github.com/dprotaso/go-yit v0.0.0-20220510233725-9ba8df137936 // indirect
