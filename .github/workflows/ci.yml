@@ -46,10 +46,13 @@ jobs:
         with: { go-version: "1.26", cache-dependency-path: backend/go.sum }
       - working-directory: backend
         run: go build ./... && go vet ./... && go test ./... -race
-      - uses: golangci/golangci-lint-action@v6
-        with:
-          working-directory: backend
-          version: latest
+      - working-directory: backend
+        run: go tool golangci-lint run ./...
+        # Pinned via backend/tools/go.mod's `tool` directive — not the
+        # golangci-lint-action, whose `version: latest` resolved to a stale
+        # v1.64.8 built with go1.24 and choked on Fiber's go1.25/1.26-gated
+        # transitive deps ("undefined: fiber"). Pinning it as a real go.sum
+        # dependency removes that whole class of drift.
 
   docker-build:
     name: Docker build (all images)
