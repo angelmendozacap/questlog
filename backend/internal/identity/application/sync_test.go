@@ -85,6 +85,9 @@ func TestEnsureProfile_ReturnsExistingWithoutOverwriting(t *testing.T) {
 	if second.Bio != "cine de animación y RPGs" {
 		t.Errorf("Bio = %q, want preserved customization, sync must not overwrite", second.Bio)
 	}
+	if second.AvatarURL != "https://example.com/a.png" {
+		t.Errorf("AvatarURL = %q, want preserved stored value %q, sync must not overwrite with new login's avatar", second.AvatarURL, "https://example.com/a.png")
+	}
 	if len(repo.inserted) != 1 {
 		t.Errorf("inserted count = %d, want 1 (no re-insert on second login)", len(repo.inserted))
 	}
