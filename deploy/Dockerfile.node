@@ -11,6 +11,27 @@ RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
 ARG APP
+# @questlog/auth's config.ts calls requireEnv() at module-import time, and
+# `next build` imports that module transitively (via apps/web|admin's
+# src/auth.ts) while introspecting route handlers — even though none of
+# authConfig's callbacks actually run until a real request comes in. So
+# these two need *some* value at build time or `next build` throws. The
+# values only need to be non-empty here: whichever process actually serves
+# traffic (`next start`) re-evaluates this module fresh against its own
+# runtime environment (set via docker-compose's `environment:`), so build-
+# time values never leak into what a running container actually uses.
+# Defaulted here (rather than required) so CI's `docker build --build-arg
+# APP=web` — which doesn't know about this app-specific env var — still
+# succeeds; docker-compose can still override them if that ever drifts.
+# Deliberately using the `.invalid` TLD (reserved by RFC 2606 for exactly
+# this) rather than a real-looking dev URL like localhost:8082 — these
+# values are never dereferenced at build time, only checked for presence,
+# and a plausible-looking URL here is the kind of thing that quietly
+# becomes load-bearing later if someone assumes it's the real config.
+ARG AUTH_KEYCLOAK_ISSUER=http://build-arg-placeholder.invalid/realms/questlog
+ARG IDENTITY_SYNC_URL=http://build-arg-placeholder.invalid/auth/sync
+ENV AUTH_KEYCLOAK_ISSUER=${AUTH_KEYCLOAK_ISSUER}
+ENV IDENTITY_SYNC_URL=${IDENTITY_SYNC_URL}
 WORKDIR /repo
 RUN pnpm --filter ${APP} build
 

@@ -1,6 +1,15 @@
 {
   "home": {
     "title": "QuestLog",
-    "tagline": "Your quest log for everything you watch and play."
+    "tagline": "Your quest log for everything you watch and play.",
+    "account": "My account"
+  },
+  "cuenta": {
+    "signedOut": "You're not signed in yet.",
+    "signIn": "Sign in",
+    "signedInAs": "Signed in as {name}",
+    "roles": "Roles: {roles}",
+    "noRoles": "none",
+    "signOut": "Sign out"
   }
 }

@@ -1,6 +1,15 @@
 {
   "home": {
     "title": "QuestLog",
-    "tagline": "Tu diario de aventuras para todo lo que ves y juegas."
+    "tagline": "Tu diario de aventuras para todo lo que ves y juegas.",
+    "account": "Mi cuenta"
+  },
+  "cuenta": {
+    "signedOut": "Aún no iniciaste sesión.",
+    "signIn": "Iniciar sesión",
+    "signedInAs": "Sesión iniciada como {name}",
+    "roles": "Roles: {roles}",
+    "noRoles": "ninguno",
+    "signOut": "Cerrar sesión"
   }
 }

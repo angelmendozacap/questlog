@@ -9,6 +9,12 @@ export default async function Home() {
       <Panel variant="signature">
         <h1 className="text-2xl font-bold">{t("title")}</h1>
         <p style={{ color: "var(--ql-muted)" }}>{t("tagline")}</p>
+        <a
+          href="cuenta"
+          style={{ color: "var(--ql-accent)", display: "inline-block", marginTop: 12 }}
+        >
+          {t("account")}
+        </a>
       </Panel>
     </main>
   );
