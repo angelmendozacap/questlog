@@ -4,25 +4,50 @@
 package main
 
 import (
+	"context"
 	"log"
 	"os"
+	"time"
 
 	"github.com/gofiber/fiber/v3"
+	"github.com/jackc/pgx/v5/pgxpool"
 
+	identityapp "github.com/alfredomendoza/questlog/backend/internal/identity/application"
+	identityinfra "github.com/alfredomendoza/questlog/backend/internal/identity/infrastructure"
+	identityiface "github.com/alfredomendoza/questlog/backend/internal/identity/interfaces"
 	"github.com/alfredomendoza/questlog/backend/internal/shared"
-	genapi "github.com/alfredomendoza/questlog/backend/internal/shared/api/generated"
+	"github.com/alfredomendoza/questlog/backend/internal/shared/authmw"
 )
 
 func main() {
+	ctx := context.Background()
+
+	pool, err := pgxpool.New(ctx, shared.MustEnv("DATABASE_URL"))
+	if err != nil {
+		log.Fatalf("public-api: connect postgres: %v", err)
+	}
+	defer pool.Close()
+
+	jwks := authmw.NewJWKS(shared.MustEnv("KEYCLOAK_JWKS_URL"))
+	if err := jwks.Refresh(ctx); err != nil {
+		log.Fatalf("public-api: initial jwks fetch: %v", err)
+	}
+	jwks.StartBackgroundRefresh(10 * time.Minute)
+
+	// Pinned issuer — the browser-facing realm URL Keycloak stamps into
+	// `iss`, which is NOT the host we fetch JWKS from. See ADR-0001.
+	issuer := shared.MustEnv("KEYCLOAK_ISSUER")
+
+	profiles := identityinfra.NewPostgresProfileRepository(pool)
+	syncHandler := identityiface.NewSyncHandler(identityapp.NewSyncService(profiles))
+
 	app := fiber.New()
 
 	app.Get("/healthz", func(c fiber.Ctx) error {
 		return c.JSON(shared.OK())
 	})
 
-	// Confirms the generated OpenAPI types link into the binary; real routes
-	// land per spec starting Phase 4 (catalog).
-	_ = genapi.Health{}
+	app.Post("/auth/sync", authmw.RequireAuth(jwks.Keyfunc, issuer), syncHandler.Handle)
 
 	port := os.Getenv("PORT")
 	if port == "" {
