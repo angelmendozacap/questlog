@@ -77,6 +77,10 @@ func (j *JWKS) Refresh(ctx context.Context) error {
 		keys[k.Kid] = pub
 	}
 
+	if len(keys) == 0 {
+		return fmt.Errorf("authmw: jwks %s returned no RSA keys", j.url)
+	}
+
 	j.mu.Lock()
 	j.keys = keys
 	j.mu.Unlock()
