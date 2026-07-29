@@ -187,13 +187,39 @@ composes handlers owned by each context + append-only audit log (05); user suspe
 locale) with real SSR content through `@questlog/ui` + Tailwind v4; `public-api` binary
 actually listens and answers `/healthz`.
 
-### Phase 3 — Auth & identity
+### Phase 3 — Auth & identity — ✅ COMPLETED
 
-- [ ] Keycloak realm `questlog` (exported to `deploy/`): clients for web/admin, roles (user, admin)
-- [ ] `packages/auth`: NextAuth + Keycloak provider, shared by both apps
-- [ ] Go JWT middleware: JWKS validation, role enforcement (admin-api requires admin role)
-- [ ] `identity` context: local user profile row synced on first login (username, avatar, bio)
-- [ ] E2E: signup → login → authenticated page in web; admin login → admin portal
+- [x] Keycloak realm `questlog` (exported to `deploy/keycloak/`): clients for web/admin, roles (user, admin)
+- [x] `packages/auth`: NextAuth + Keycloak provider, shared by both apps
+- [x] Go JWT middleware: JWKS validation, role enforcement (admin-api requires admin role)
+- [x] `identity` context: local user profile row synced on first login (username, avatar, bio)
+- [x] E2E: signup → login → authenticated page in web; admin login → admin portal — verified manually per `docs/verify-phase-3.md` (full Playwright automation is Phase 9 scope)
+
+**Non-obvious decisions:** Keycloak sits behind Docker Compose, so the browser
+and the Next.js server need different, non-interchangeable URLs to reach it —
+documented in `docs/adr/0001-keycloak-docker-network-split.md`. The same split
+means the Go backend fetches JWKS from `keycloak:8080` but validates the token's
+`iss` against `localhost:8082` — deliberate, and the reason `KEYCLOAK_JWKS_URL`
+and `KEYCLOAK_ISSUER` name different hosts. `UserProfile` stores no role data
+(roles are always read live from the JWT, never cached locally, to avoid drift
+when an admin changes someone's Keycloak role).
+
+**Deferred, blocking prerequisite for the next `apps/admin` page:** the admin
+portal is currently gated twice — once in `apps/admin/src/app/[locale]/layout.tsx`
+(controls what's displayed) and once, independently, in each page component
+like `src/app/[locale]/page.tsx` (controls what's sent — the App Router
+invokes `page.tsx` to build the layout's `children` prop even when the layout
+discards that prop, so an ungated page still ships its rendered markup into
+the RSC flight payload as an inert, unmounted chunk; verified during Task 12
+by inspecting a real response body for a non-admin session). This means every
+future admin page has to remember to repeat the same manual `isAdmin` check,
+and a forgotten one is silent — no test currently catches it. **Before adding
+the first new page to `apps/admin`, replace the per-page checks with an admin
+guard in `apps/admin/src/middleware.ts`**, which runs before any RSC render
+and can't be skipped per-page. Prerequisite for that work: `packages/auth/src/config.ts`
+decodes the JWT with `Buffer.from(..., "base64url")`, which is Node-only, so
+the middleware will need `export const config = { runtime: "nodejs" }` or the
+decode path made edge-safe first.
 
 ### Phase 4 — Catalog
 
