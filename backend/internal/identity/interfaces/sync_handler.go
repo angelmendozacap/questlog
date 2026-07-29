@@ -3,10 +3,14 @@
 package interfaces
 
 import (
+	"errors"
+	"log"
+
 	"github.com/gofiber/fiber/v3"
 	"github.com/google/uuid"
 
 	"github.com/alfredomendoza/questlog/backend/internal/identity/application"
+	"github.com/alfredomendoza/questlog/backend/internal/identity/domain"
 	"github.com/alfredomendoza/questlog/backend/internal/shared/authmw"
 )
 
@@ -43,8 +47,21 @@ func (h *SyncHandler) Handle(c fiber.Ctx) error {
 		AvatarURL:  claims.Picture,
 	})
 	if err != nil {
+		// Domain validation failures mean the token's claims themselves were
+		// unusable (e.g. an empty preferred_username) — a client/token
+		// problem, not a server fault. These sentinel messages are static
+		// and safe to return as-is. Everything else (repository/driver
+		// errors, wrapped with %w by application.SyncService) may carry
+		// schema or SQL-adjacent detail, so it's logged server-side only
+		// and the caller gets a generic, static message.
+		if errors.Is(err, domain.ErrEmptyUsername) || errors.Is(err, domain.ErrEmptyKeycloakID) {
+			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+				"code": "invalid_claims", "message": err.Error(),
+			})
+		}
+		log.Printf("identity: sync failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
-			"code": "sync_failed", "message": err.Error(),
+			"code": "sync_failed", "message": "unable to sync profile",
 		})
 	}
 
