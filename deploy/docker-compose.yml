@@ -22,10 +22,41 @@ services:
     environment:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
+      # Fixes every issued token's `iss` claim to this value regardless of
+      # whether the request came from the browser (localhost:8082) or a
+      # container on the compose network (keycloak:8080) — see
+      # docs/adr/0001-keycloak-docker-network-split.md.
+      KC_HOSTNAME: http://localhost:8082
     ports: ["8082:8080"]
     volumes:
       - ./keycloak:/opt/keycloak/data/import
-    # Realm export lands in Phase 3 (docs/specs auth work); dir is empty for now.
+    # No volume for Keycloak's own data dir: state (including the realm
+    # import and any signups made during manual testing) is ephemeral and
+    # re-imported fresh on every `docker compose up`.
+    healthcheck:
+      # public-api/admin-api depend on this with condition: service_healthy.
+      # Plain `service_started` only waits for the process to launch, not
+      # for Keycloak to finish importing the realm and start serving HTTP —
+      # on a cold `docker compose up` that race lost, crashing public-api/
+      # admin-api on their synchronous initial JWKS fetch. This probes the
+      # actual realm's JWKS endpoint (the same one those services call)
+      # with bash's /dev/tcp, since the image ships neither curl nor wget.
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/8080 && printf 'GET /realms/questlog/protocol/openid-connect/certs HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && head -c 15 <&3 | grep -q 'HTTP/1.1 200'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+      start_period: 10s
+
+  migrate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.go
+      args: { CMD_PATH: cmd/migrate }
+    environment:
+      DATABASE_URL: postgres://questlog:questlog@postgres:5432/questlog?sslmode=disable
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   public-api:
     build:
@@ -35,9 +66,19 @@ services:
     environment:
       PORT: "8080"
       DATABASE_URL: postgres://questlog:questlog@postgres:5432/questlog?sslmode=disable
+      # Keys are fetched over the compose network...
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/questlog/protocol/openid-connect/certs
+      # ...but `iss` is pinned to the browser-facing URL, because that's
+      # what KC_HOSTNAME makes Keycloak stamp into every token. These two
+      # differing hosts are expected, not a typo — see ADR-0001.
+      KEYCLOAK_ISSUER: http://localhost:8082/realms/questlog
     ports: ["8080:8080"]
     depends_on:
       postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      keycloak:
         condition: service_healthy
 
   admin-api:
@@ -48,9 +89,19 @@ services:
     environment:
       PORT: "8081"
       DATABASE_URL: postgres://questlog:questlog@postgres:5432/questlog?sslmode=disable
+      # Keys are fetched over the compose network...
+      KEYCLOAK_JWKS_URL: http://keycloak:8080/realms/questlog/protocol/openid-connect/certs
+      # ...but `iss` is pinned to the browser-facing URL, because that's
+      # what KC_HOSTNAME makes Keycloak stamp into every token. These two
+      # differing hosts are expected, not a typo — see ADR-0001.
+      KEYCLOAK_ISSUER: http://localhost:8082/realms/questlog
     ports: ["8081:8081"]
     depends_on:
       postgres:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+      keycloak:
         condition: service_healthy
 
   web:
@@ -58,16 +109,30 @@ services:
       context: ..
       dockerfile: deploy/Dockerfile.node
       args: { APP: web, PORT: "3000" }
+    environment:
+      AUTH_SECRET: dev-only-insecure-secret-change-me
+      AUTH_KEYCLOAK_ID: questlog-web
+      AUTH_KEYCLOAK_SECRET: questlog-web-dev-secret
+      AUTH_KEYCLOAK_ISSUER: http://localhost:8082/realms/questlog
+      AUTH_KEYCLOAK_INTERNAL_ISSUER: http://keycloak:8080/realms/questlog
+      IDENTITY_SYNC_URL: http://public-api:8080/auth/sync
     ports: ["3000:3000"]
-    depends_on: [public-api]
+    depends_on: [public-api, keycloak]
 
   admin:
     build:
       context: ..
       dockerfile: deploy/Dockerfile.node
       args: { APP: admin, PORT: "3001" }
+    environment:
+      AUTH_SECRET: dev-only-insecure-secret-change-me
+      AUTH_KEYCLOAK_ID: questlog-admin
+      AUTH_KEYCLOAK_SECRET: questlog-admin-dev-secret
+      AUTH_KEYCLOAK_ISSUER: http://localhost:8082/realms/questlog
+      AUTH_KEYCLOAK_INTERNAL_ISSUER: http://keycloak:8080/realms/questlog
+      IDENTITY_SYNC_URL: http://public-api:8080/auth/sync
     ports: ["3001:3001"]
-    depends_on: [admin-api]
+    depends_on: [admin-api, public-api, keycloak]
 
 volumes:
   questlog-postgres:

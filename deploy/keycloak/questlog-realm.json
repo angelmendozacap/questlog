@@ -1,0 +1,72 @@
+{
+  "realm": "questlog",
+  "enabled": true,
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "sslRequired": "none",
+  "roles": {
+    "realm": [
+      { "name": "user", "description": "Standard QuestLog member" },
+      { "name": "admin", "description": "Moderation and catalog curation access" }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-questlog",
+    "composite": true,
+    "composites": {
+      "realm": ["user", "offline_access", "uma_authorization"]
+    }
+  },
+  "clients": [
+    {
+      "clientId": "questlog-web",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "questlog-web-dev-secret",
+      "redirectUris": ["http://localhost:3000/api/auth/callback/keycloak"],
+      "webOrigins": ["http://localhost:3000"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true
+    },
+    {
+      "clientId": "questlog-admin",
+      "enabled": true,
+      "publicClient": false,
+      "protocol": "openid-connect",
+      "clientAuthenticatorType": "client-secret",
+      "secret": "questlog-admin-dev-secret",
+      "redirectUris": ["http://localhost:3001/api/auth/callback/keycloak"],
+      "webOrigins": ["http://localhost:3001"],
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true
+    }
+  ],
+  "users": [
+    {
+      "username": "quest_user",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "quest_user@example.com",
+      "firstName": "Quest",
+      "lastName": "User",
+      "credentials": [{ "type": "password", "value": "questpass1", "temporary": false }],
+      "realmRoles": ["user"]
+    },
+    {
+      "username": "quest_admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "quest_admin@example.com",
+      "firstName": "Quest",
+      "lastName": "Admin",
+      "credentials": [{ "type": "password", "value": "adminpass1", "temporary": false }],
+      "realmRoles": ["user", "admin"]
+    }
+  ]
+}
