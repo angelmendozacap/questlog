@@ -2,5 +2,13 @@
   "home": {
     "title": "QuestLog Admin",
     "tagline": "Moderación, usuarios y curación de catálogo."
+  },
+  "admin": {
+    "signInTitle": "Acceso administrativo",
+    "signInMessage": "Inicia sesión con una cuenta con rol de administrador.",
+    "signIn": "Iniciar sesión",
+    "deniedTitle": "Acceso denegado",
+    "deniedMessage": "Tu cuenta no tiene el rol de administrador.",
+    "signOut": "Cerrar sesión"
   }
 }

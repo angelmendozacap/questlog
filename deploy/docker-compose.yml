@@ -138,6 +138,13 @@ services:
       AUTH_KEYCLOAK_ISSUER: http://localhost:8082/realms/questlog
       AUTH_KEYCLOAK_INTERNAL_ISSUER: http://keycloak:8080/realms/questlog
       IDENTITY_SYNC_URL: http://public-api:8080/auth/sync
+      # `next start` runs with NODE_ENV=production, where Auth.js refuses
+      # to trust the request's Host header unless told to (anti host-header-
+      # injection default) — without this every auth route 500s with
+      # "UntrustedHost". Fine to blanket-trust here: this container is only
+      # ever reached via the fixed docker-compose network / localhost:3001
+      # in dev, there's no untrusted edge in front of it.
+      AUTH_TRUST_HOST: "true"
     ports: ["3001:3001"]
     depends_on: [admin-api, public-api, keycloak]
 
