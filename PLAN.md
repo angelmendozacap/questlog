@@ -221,6 +221,23 @@ decodes the JWT with `Buffer.from(..., "base64url")`, which is Node-only, so
 the middleware will need `export const config = { runtime: "nodejs" }` or the
 decode path made edge-safe first.
 
+**Tracked gap: self-registered users don't get the `user` realm role.**
+`deploy/keycloak/questlog-realm.json`'s `defaultRole.composites.realm`
+declares `["user", "offline_access", "uma_authorization"]`, but a live
+`docker compose up` shows the effective `default-roles-questlog` composite
+only carrying Keycloak's own built-ins (`manage-account`,
+`uma_authorization`, `view-profile`, `offline_access`) — `user` never
+lands on new signups (verified in Task 12; cause unexplained — the
+Keycloak import log reports the realm import succeeding with no warning,
+so this isn't a visibly failed import). Harmless today: nothing gates on
+`user` yet (`POST /auth/sync` only requires authentication; `admin-api`
+gates on `admin`), so the gap is latent. It becomes load-bearing the
+moment anything starts checking for the `user` role — self-registered
+users would be silently denied while the seeded `quest_user`/`quest_admin`
+accounts (which have roles assigned directly, not via the composite) pass,
+a bug that only reproduces for real signups. Fix belongs in a revisit of
+Task 8's realm export, not patched in Task 12.
+
 ### Phase 4 — Catalog
 
 - [ ] TMDB + IGDB clients (anti-corruption layer) with API-key config
