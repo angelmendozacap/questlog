@@ -56,9 +56,13 @@ func (h *SyncHandler) Handle(c fiber.Ctx) error {
 		// and the caller gets a generic, static message.
 		//
 		// Each branch returns the *sentinel's* own message rather than
-		// err.Error(): by the time it gets here the error has been wrapped
-		// by application.SyncService ("sync: insert profile: ..."), and
-		// that prefix names our internal layering for no caller benefit.
+		// err.Error(). That's load-bearing for the 409 below, where
+		// SyncService has wrapped the error ("sync: insert profile: ...")
+		// and the prefix names our internal layering for no caller benefit.
+		// For the 400s it's currently equivalent — SyncService returns the
+		// validation error unwrapped — so it's the branches staying
+		// consistent rather than each one deciding for itself, and it stops
+		// mattering the day that path gets wrapped too.
 		for _, known := range []error{domain.ErrEmptyUsername, domain.ErrEmptyKeycloakID} {
 			if errors.Is(err, known) {
 				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{

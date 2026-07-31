@@ -26,11 +26,14 @@ const COOKIE_PREFIX = requireEnv("AUTH_COOKIE_PREFIX");
 // closed and a retry works, so it's an annoyance rather than a hole — but
 // it's the same "one cookie jar" root cause, so it's fixed the same way.
 //
-// Note these are literal names, which forfeits the `__Secure-` prefix
-// Auth.js would otherwise apply over HTTPS. The `secure` attribute itself
-// survives (Auth.js deep-merges these overrides onto its defaults); only
-// the prefix's browser-enforced guarantee is lost. Irrelevant on localhost
-// — revisit when there's a real HTTPS deployment.
+// Note these are literal names, which forfeits the cookie-name prefixes
+// Auth.js would otherwise apply over HTTPS: `__Secure-` on most of these,
+// and the stricter `__Host-` on csrfToken. The `secure` and `httpOnly`
+// attributes themselves survive (Auth.js deep-merges these overrides onto
+// its defaults); what's lost is the browser-enforced guarantee the name
+// prefix carries. Irrelevant on localhost, where there is no HTTPS to
+// prefix — but this is the thing to revisit before a real HTTPS
+// deployment, not after.
 const cookieNames = {
   sessionToken: { name: `${COOKIE_PREFIX}.session-token` },
   callbackUrl: { name: `${COOKIE_PREFIX}.callback-url` },
@@ -38,6 +41,10 @@ const cookieNames = {
   pkceCodeVerifier: { name: `${COOKIE_PREFIX}.pkce.code_verifier` },
   state: { name: `${COOKIE_PREFIX}.state` },
   nonce: { name: `${COOKIE_PREFIX}.nonce` },
+  // Inert today — no WebAuthn provider is configured — but it's the last
+  // cookie Auth.js can set, and leaving one unprefixed is exactly the
+  // leftover this block exists to eliminate.
+  webauthnChallenge: { name: `${COOKIE_PREFIX}.challenge` },
 };
 
 // Optional, app-specific. Keycloak keeps its own SSO session independent

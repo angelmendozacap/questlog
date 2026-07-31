@@ -263,12 +263,15 @@ fetch is bounded at 5s. Sign-in also retries once on a network error or 5xx
 (never on a 4xx, which is a verdict, not a blip), which covers a transient
 blip such as `public-api` mid-restart.
 
-What remains is the durable case, and it is **blocked on refresh-token
-rotation** (the gap above): a retry after sign-in needs a valid access
-token, and the one on the JWT is dead within ~5 minutes. So the real fix is
-either token refresh plus a lazy re-sync on the next request, or a
-server-to-server reconciler with its own client-credentials token — both
-Phase 4+ work, neither a patch to this callback.
+What remains is the durable case, and it needs a mechanism this callback
+can't provide: a retry after sign-in needs a valid access token, and the
+one on the JWT is dead within ~5 minutes. Two viable shapes, both Phase 4+:
+refresh-token rotation (the gap above) plus a lazy re-sync on the next
+request, or a server-to-server reconciler holding its own
+client-credentials token. Note the second is **not** gated on refresh
+rotation — it never touches a user token — so "blocked on refresh" would
+overstate it. It's a scoping call: neither shape is a patch to this
+callback, and nothing depends on the row until Phase 5.
 
 **Known trade-off: admin sign-out doesn't terminate the Keycloak SSO
 session.** Fixing the admin "Acceso denegado" dead end (finding 4 of the

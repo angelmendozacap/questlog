@@ -155,9 +155,13 @@ func TestSyncHandler(t *testing.T) {
 				if body["code"] != "invalid_claims" {
 					t.Errorf("code = %v, want invalid_claims", body["code"])
 				}
+				// Pinned to the sentinel's exact text, like the 409 case: the
+				// handler must not fall back to err.Error(), which would start
+				// leaking wrapper prefixes the day SyncService wraps this path
+				// the way it already wraps the repository one.
 				msg, _ := body["message"].(string)
-				if msg == "" {
-					t.Error("message was empty, want a non-empty explanation")
+				if msg != domain.ErrEmptyUsername.Error() {
+					t.Errorf("message = %q, want the bare sentinel %q", msg, domain.ErrEmptyUsername.Error())
 				}
 			},
 		},
@@ -177,8 +181,8 @@ func TestSyncHandler(t *testing.T) {
 					t.Errorf("code = %v, want invalid_claims", body["code"])
 				}
 				msg, _ := body["message"].(string)
-				if msg == "" {
-					t.Error("message was empty, want a non-empty explanation")
+				if msg != domain.ErrEmptyKeycloakID.Error() {
+					t.Errorf("message = %q, want the bare sentinel %q", msg, domain.ErrEmptyKeycloakID.Error())
 				}
 			},
 		},
