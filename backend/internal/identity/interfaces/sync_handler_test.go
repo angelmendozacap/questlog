@@ -31,6 +31,10 @@ import (
 
 const testIssuer = "http://localhost:8082/realms/questlog"
 
+// testAllowedAZP stands in for public-api's KEYCLOAK_ALLOWED_AZP — both
+// first-party clients call /auth/sync from their own NextAuth config.
+var testAllowedAZP = []string{"questlog-web", "questlog-admin"}
+
 // fakeRepo is a minimal domain.ProfileRepository stub. Using a real
 // application.SyncService on top of it (rather than a fake SyncService)
 // means these tests exercise the real domain validation and the real
@@ -83,6 +87,7 @@ func testToken(t *testing.T, key *rsa.PrivateKey, subject, preferredUsername str
 		},
 		PreferredUsername: preferredUsername,
 		Picture:           "https://example.com/a.png",
+		AuthorizedParty:   "questlog-web",
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
 	token.Header["kid"] = "test-kid"
@@ -98,7 +103,7 @@ func testToken(t *testing.T, key *rsa.PrivateKey, subject, preferredUsername str
 func newTestApp(repo domain.ProfileRepository, jwks *authmw.JWKS) *fiber.App {
 	handler := interfaces.NewSyncHandler(application.NewSyncService(repo))
 	app := fiber.New()
-	app.Post("/auth/sync", authmw.RequireAuth(jwks.Keyfunc, testIssuer), handler.Handle)
+	app.Post("/auth/sync", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), handler.Handle)
 	return app
 }
 
@@ -207,6 +212,31 @@ func TestSyncHandler(t *testing.T) {
 					if strings.Contains(raw, leaked) {
 						t.Errorf("response body leaked driver text %q: %s", leaked, raw)
 					}
+				}
+			},
+		},
+		{
+			// (e) domain.ErrUsernameTaken (a real username collision with a
+			// different keycloak_id — see postgres_repository.go) must
+			// surface as a distinct, actionable 409, not the generic 500
+			// used for opaque repository failures in (c).
+			name:     "username collision maps to 409 username_taken",
+			subject:  uuid.New().String(),
+			username: "nekomata",
+			repo: &fakeRepo{
+				insertFn: func(_ context.Context, _ domain.UserProfile) (domain.UserProfile, error) {
+					return domain.UserProfile{}, domain.ErrUsernameTaken
+				},
+			},
+
+			wantStatus: fiber.StatusConflict,
+			check: func(t *testing.T, body map[string]any, _ string) {
+				if body["code"] != "username_taken" {
+					t.Errorf("code = %v, want username_taken", body["code"])
+				}
+				msg, _ := body["message"].(string)
+				if msg == "" {
+					t.Error("message was empty, want a non-empty explanation")
 				}
 			},
 		},

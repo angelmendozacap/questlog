@@ -26,6 +26,17 @@ type UserProfile struct {
 var (
 	ErrEmptyKeycloakID = errors.New("identity: keycloak id is required")
 	ErrEmptyUsername   = errors.New("identity: username is required")
+	// ErrUsernameTaken means the insert collided on username with a
+	// *different* keycloak_id — not the ordinary "this identity already has
+	// a profile" case (that's handled by EnsureProfile's find-first check
+	// and by the repository treating a keycloak_id conflict as "found").
+	// It happens because Keycloak's own state is ephemeral in local dev
+	// (no volume; re-imported on every `docker compose up`) while
+	// Postgres's is persistent: a user who re-registers the same username
+	// gets a new keycloak_id, misses the lookup, and collides here. Sync
+	// must not silently rename the user to paper over this — it's surfaced
+	// as a distinct, actionable error instead.
+	ErrUsernameTaken = errors.New("identity: username already in use by another account")
 )
 
 // NewUserProfile validates and builds a fresh profile for first-login sync.

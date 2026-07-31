@@ -21,6 +21,13 @@ type SyncInput struct {
 // UserProfile exists for this Keycloak identity, without ever overwriting
 // a profile the user has since customized (bio, avatar) on subsequent
 // logins — sync only ever creates, it never updates an existing row.
+//
+// EnsureProfile is check-then-act (FindByKeycloakID, then Insert), which by
+// itself is racy: two near-simultaneous first logins for the same identity
+// can both miss the find. That race is closed one layer down — repository
+// implementations of Insert are required to be idempotent on a keycloak_id
+// conflict (see domain.ProfileRepository's doc comment), so the losing
+// call here still returns the winner's profile instead of an error.
 type SyncService struct {
 	repo domain.ProfileRepository
 }

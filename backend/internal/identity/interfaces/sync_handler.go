@@ -59,6 +59,16 @@ func (h *SyncHandler) Handle(c fiber.Ctx) error {
 				"code": "invalid_claims", "message": err.Error(),
 			})
 		}
+		// A username collision with a different keycloak_id is an
+		// actionable conflict (the client — or the person behind it — can
+		// do something about it), not a server fault, and not a case we
+		// paper over by silently renaming the user. Static, safe to
+		// return as-is like the invalid_claims branch above.
+		if errors.Is(err, domain.ErrUsernameTaken) {
+			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
+				"code": "username_taken", "message": err.Error(),
+			})
+		}
 		log.Printf("identity: sync failed: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"code": "sync_failed", "message": "unable to sync profile",
