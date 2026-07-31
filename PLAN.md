@@ -238,6 +238,46 @@ accounts (which have roles assigned directly, not via the composite) pass,
 a bug that only reproduces for real signups. Fix belongs in a revisit of
 Task 8's realm export, not patched in Task 12.
 
+**Tracked gap: no refresh-token rotation.** `token.accessToken` is captured
+once at sign-in and never refreshed, against a ~5-minute Keycloak
+access-token lifetime and a 30-day JWT session. It's kept on the JWT
+(server-only, not exposed via `session`) for a future server component to
+reach via `auth()`, but as of Phase 3 nothing calls the Go API with a
+user's access token. **Refresh-token rotation is a prerequisite before
+anything does** (Phase 4+) — otherwise every such call fails once the
+token is more than a few minutes stale.
+
+**Tracked gap: a failed first-login identity sync never retries.**
+`syncProfile` (`packages/auth/src/config.ts`) only runs from the `jwt`
+callback when `account?.access_token` is present, i.e. only at the initial
+sign-in — and it swallows all failures (logged, not surfaced). If
+`public-api`/Postgres is down at that exact moment, the user still gets a
+valid 30-day session with no `identity.user_profiles` row, and nothing
+will create one until they sign out and back in. Phase 5's reviews FK to
+that row, so this becomes load-bearing there. `EnsureProfile`'s insert is
+now idempotent under concurrent first logins (`postgres_repository.go`),
+which closes the race-condition half of this problem, but not the
+down-dependency-at-sign-in half — that needs an actual retry mechanism
+(e.g. re-attempt sync lazily on next request, or a background reconciler),
+not yet built.
+
+**Known trade-off: admin sign-out doesn't terminate the Keycloak SSO
+session.** Fixing the admin "Acceso denegado" dead end (finding 4 of the
+Phase 3 fix wave) used `prompt: "login"` on the admin app's authorization
+params (`AUTH_PROMPT_LOGIN`, threaded through `packages/auth/src/config.ts`)
+rather than full federated logout against Keycloak's
+`end_session_endpoint`. This makes Keycloak always re-show a credentials
+form for the admin app, which is enough to let a denied user switch
+accounts — though because the SSO session survives, that form is
+Keycloak's *re-authenticate* screen with the username locked, so switching
+accounts costs one extra click on its "Restart login" button. Keycloak's
+own SSO cookie is untouched, so a still-logged-in session
+persists there (and in `apps/web`, which doesn't set `AUTH_PROMPT_LOGIN`)
+until it naturally expires or someone signs out of Keycloak directly.
+Acceptable for a two-client local-dev project; revisit with real
+federated logout (needs the id_token persisted on the JWT, and a
+browser-facing-URL redirect per ADR-0001) if that ever matters.
+
 ### Phase 4 — Catalog
 
 - [ ] TMDB + IGDB clients (anti-corruption layer) with API-key config

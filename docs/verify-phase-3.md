@@ -73,11 +73,21 @@ Confirm: roles `user` and `admin` exist; clients `questlog-web` and
 ## 3. Login with a seeded user
 
 Keycloak keeps its own SSO session independent of the Next.js app's
-session — signing out of `/es/cuenta` clears the app's cookie but not
+session — signing out of `/es/cuenta` clears `apps/web`'s cookie but not
 Keycloak's, so clicking "Iniciar sesión" again silently re-authenticates
-as whoever was last signed in instead of showing the login form. Clear
-cookies for `localhost` (or use a fresh/incognito context) before signing
-in as a different user in this step and in step 4.
+as whoever was last signed in instead of showing the login form. This is
+`apps/web`-specific: clear cookies for `localhost` (or use a fresh/
+incognito context) before signing in as a different user in this step.
+(`apps/admin` doesn't have this problem — it sets `prompt: "login"` on the
+Keycloak authorization request, via `AUTH_PROMPT_LOGIN`, specifically so
+its access-denied screen can always offer a real way to switch accounts;
+see step 4.)
+
+Note this is *not* the same issue as `apps/web` and `apps/admin` sharing a
+session — they don't: each app has its own `AUTH_SECRET` and its own
+session cookie name (`AUTH_COOKIE_NAME`, `questlog-web.session-token` /
+`questlog-admin.session-token`), so signing into one no longer affects the
+other's session at all. See step 5.
 
 1. Sign out from `/es/cuenta` ("Cerrar sesión"), then clear cookies.
 2. Sign in again with `quest_user` / `questpass1`.
@@ -92,7 +102,8 @@ in as a different user in this step and in step 4.
    sign-in gate, not the portal.
 2. Sign in with `quest_user` / `questpass1` (a non-admin user).
 3. Confirm you see "Acceso denegado" / "Tu cuenta no tiene el rol de
-   administrador." — not the portal.
+   administrador. Cierra sesión para entrar con otra cuenta." — not the
+   portal.
 4. **Check the raw response body, not just the rendered page.** The layout's
    role gate controls what's *displayed*, but `page.tsx` is always invoked by
    the App Router to build the layout's `children` prop, even when the
@@ -105,8 +116,9 @@ in as a different user in this step and in step 4.
    provider's props regardless of which components render, so both strings
    legitimately appear even when nothing leaked. Instead:
    ```bash
-   TOKEN=$(playwright-cli --raw cookie-get authjs.session-token)  # or copy from devtools
-   curl -s -H "Cookie: authjs.session-token=$TOKEN" http://localhost:3001/es \
+   # Note the cookie name: apps/admin, not authjs.session-token.
+   TOKEN=$(playwright-cli --raw cookie-get questlog-admin.session-token)  # or copy from devtools
+   curl -s -H "Cookie: questlog-admin.session-token=$TOKEN" http://localhost:3001/es \
      | grep -o "max-w-2xl"
    ```
    `max-w-2xl` is the Home page's own className (`apps/admin/src/app/[locale]/page.tsx`),
@@ -116,12 +128,44 @@ in as a different user in this step and in step 4.
    `<script>` blocks) — that null is `Home()`'s own early return, proving
    the page component ran and produced nothing, rather than the router
    simply never invoking it.
-5. Sign out, clear cookies, sign in again with `quest_admin` / `adminpass1`.
+5. **Without manually clearing cookies**, click "Cerrar sesión" on the
+   denied screen. You land back on the "Acceso administrativo" sign-in
+   gate. Click "Iniciar sesión" again: Keycloak must show a credentials
+   form, not silently re-authenticate you as `quest_user` again, even
+   though Keycloak's own SSO cookie for `quest_user` is still live — this
+   is `AUTH_PROMPT_LOGIN` doing its job, and it's the fix for the denial
+   screen previously being a dead end.
+
+   Because Keycloak's SSO session survives an app-local sign-out (see
+   PLAN.md's "admin sign-out doesn't terminate the Keycloak SSO session"),
+   what `prompt=login` gets you is Keycloak's *re-authenticate* form:
+   "Please re-authenticate to continue", with the username field locked to
+   `quest_user`. To switch accounts, click **"Restart login"** next to that
+   field — the form clears and accepts any username. Two clicks, no cookie
+   surgery. Sign in as `quest_admin` / `adminpass1`.
 6. Confirm the portal content renders (the existing home Panel, heading
    "QuestLog Admin", tagline "Moderación, usuarios y curación de
    catálogo.").
 
-## 5. Go JWT middleware, directly
+## 5. Independent sessions (web vs admin)
+
+Before the Phase 3 fix wave, `apps/web` and `apps/admin` shared one
+session cookie name and one `AUTH_SECRET`, so signing into either app
+silently overwrote the other's session — the admin portal would even
+admit a session established purely against the `questlog-web` Keycloak
+client. Confirm that's fixed:
+
+1. Continuing from step 4 above (signed in to `apps/admin` as
+   `quest_admin`, same browser), open http://localhost:3000/es/cuenta.
+2. Expect "Aún no iniciaste sesión." — **not** a session for
+   `quest_admin`. `apps/web` must not see `apps/admin`'s session.
+3. Sign in on `apps/web` as `quest_user` / `questpass1`. Confirm
+   `/es/cuenta` now shows that session.
+4. Reload http://localhost:3001/es. Confirm `apps/admin` still shows
+   `quest_admin`'s portal — the new `apps/web` sign-in must not have
+   touched it.
+
+## 6. Go JWT middleware, directly
 
 ```bash
 curl -i http://localhost:8081/admin/whoami
@@ -147,6 +191,21 @@ ADMIN_TOKEN=$(curl -s -d "grant_type=password" \
 curl -i -H "Authorization: Bearer $ADMIN_TOKEN" http://localhost:8081/admin/whoami
 # expect: 200 {"username":"quest_admin","roles":[...,"admin","user",...]}
 
+# quest_user, but a token minted via the questlog-admin client (azp is
+# allowed for admin-api; only the realm role is missing).
+USER_VIA_ADMIN_CLIENT_TOKEN=$(curl -s -d "grant_type=password" \
+  -d "client_id=questlog-admin" -d "client_secret=questlog-admin-dev-secret" \
+  -d "username=quest_user" -d "password=questpass1" \
+  http://localhost:8082/realms/questlog/protocol/openid-connect/token \
+  | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+
+curl -i -H "Authorization: Bearer $USER_VIA_ADMIN_CLIENT_TOKEN" http://localhost:8081/admin/whoami
+# expect: 403 (azp=questlog-admin is allowed; quest_user just lacks the
+# admin role — this is authmw.RequireRole rejecting it, not the azp check)
+
+# quest_user, token minted via the questlog-web client — a valid,
+# same-realm, unexpired token, but from a client outside admin-api's
+# KEYCLOAK_ALLOWED_AZP allow-list (admin-api only trusts questlog-admin).
 USER_TOKEN=$(curl -s -d "grant_type=password" \
   -d "client_id=questlog-web" -d "client_secret=questlog-web-dev-secret" \
   -d "username=quest_user" -d "password=questpass1" \
@@ -154,13 +213,15 @@ USER_TOKEN=$(curl -s -d "grant_type=password" \
   | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 
 curl -i -H "Authorization: Bearer $USER_TOKEN" http://localhost:8081/admin/whoami
-# expect: 403 (quest_user lacks the admin role)
+# expect: 401 (azp=questlog-web is not in admin-api's allow-list — rejected
+# by authmw.RequireAuth itself, before role is even checked)
 
 curl -i -H "Authorization: Bearer $USER_TOKEN" -X POST http://localhost:8080/auth/sync
-# expect: 200 — any authenticated user can sync, not just admins
+# expect: 200 — public-api's allow-list is questlog-web,questlog-admin, and
+# any authenticated user can sync, not just admins
 ```
 
-## 6. Automated coverage
+## 7. Automated coverage
 
 ```bash
 cd backend

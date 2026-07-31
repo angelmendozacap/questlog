@@ -68,4 +68,12 @@ Pinning `iss` to the JWKS host instead would reject every real token.
   `KEYCLOAK_ISSUER` follows the public URL wherever it goes.
 - The backend trusts exactly one issuer. Accepting tokens from more than one
   Keycloak instance would mean turning `KEYCLOAK_ISSUER` into a list — a
-  deliberate change, not an accident.
+  deliberate change, not an accident. This is a separate dimension from
+  *which client within that issuer* a token was minted for: `iss` only
+  proves a token came from the `questlog` realm, not which of the realm's
+  clients requested it. `internal/shared/authmw` additionally checks the
+  token's `azp` claim against a per-binary allow-list
+  (`KEYCLOAK_ALLOWED_AZP` — `questlog-web,questlog-admin` for `public-api`,
+  `questlog-admin` only for `admin-api`), so a third client added to the
+  realm later doesn't silently get its tokens accepted just because it's
+  same-realm and well-formed.
