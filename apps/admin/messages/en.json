@@ -2,5 +2,13 @@
   "home": {
     "title": "QuestLog Admin",
     "tagline": "Moderation, users and catalog curation."
+  },
+  "admin": {
+    "signInTitle": "Admin access",
+    "signInMessage": "Sign in with an account that has the admin role.",
+    "signIn": "Sign in",
+    "deniedTitle": "Access denied",
+    "deniedMessage": "Your account doesn't have the admin role. Sign out to sign in with a different account.",
+    "signOut": "Sign out"
   }
 }

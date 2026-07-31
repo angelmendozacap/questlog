@@ -187,13 +187,108 @@ composes handlers owned by each context + append-only audit log (05); user suspe
 locale) with real SSR content through `@questlog/ui` + Tailwind v4; `public-api` binary
 actually listens and answers `/healthz`.
 
-### Phase 3 — Auth & identity
+### Phase 3 — Auth & identity — ✅ COMPLETED
 
-- [ ] Keycloak realm `questlog` (exported to `deploy/`): clients for web/admin, roles (user, admin)
-- [ ] `packages/auth`: NextAuth + Keycloak provider, shared by both apps
-- [ ] Go JWT middleware: JWKS validation, role enforcement (admin-api requires admin role)
-- [ ] `identity` context: local user profile row synced on first login (username, avatar, bio)
-- [ ] E2E: signup → login → authenticated page in web; admin login → admin portal
+- [x] Keycloak realm `questlog` (exported to `deploy/keycloak/`): clients for web/admin, roles (user, admin)
+- [x] `packages/auth`: NextAuth + Keycloak provider, shared by both apps
+- [x] Go JWT middleware: JWKS validation, role enforcement (admin-api requires admin role)
+- [x] `identity` context: local user profile row synced on first login (username, avatar, bio)
+- [x] E2E: signup → login → authenticated page in web; admin login → admin portal — verified manually per `docs/verify-phase-3.md` (full Playwright automation is Phase 9 scope)
+
+**Non-obvious decisions:** Keycloak sits behind Docker Compose, so the browser
+and the Next.js server need different, non-interchangeable URLs to reach it —
+documented in `docs/adr/0001-keycloak-docker-network-split.md`. The same split
+means the Go backend fetches JWKS from `keycloak:8080` but validates the token's
+`iss` against `localhost:8082` — deliberate, and the reason `KEYCLOAK_JWKS_URL`
+and `KEYCLOAK_ISSUER` name different hosts. `UserProfile` stores no role data
+(roles are always read live from the JWT, never cached locally, to avoid drift
+when an admin changes someone's Keycloak role).
+
+**Deferred, blocking prerequisite for the next `apps/admin` page:** the admin
+portal is currently gated twice — once in `apps/admin/src/app/[locale]/layout.tsx`
+(controls what's displayed) and once, independently, in each page component
+like `src/app/[locale]/page.tsx` (controls what's sent — the App Router
+invokes `page.tsx` to build the layout's `children` prop even when the layout
+discards that prop, so an ungated page still ships its rendered markup into
+the RSC flight payload as an inert, unmounted chunk; verified during Task 12
+by inspecting a real response body for a non-admin session). This means every
+future admin page has to remember to repeat the same manual `isAdmin` check,
+and a forgotten one is silent — no test currently catches it. **Before adding
+the first new page to `apps/admin`, replace the per-page checks with an admin
+guard in `apps/admin/src/middleware.ts`**, which runs before any RSC render
+and can't be skipped per-page. Prerequisite for that work: `packages/auth/src/config.ts`
+decodes the JWT with `Buffer.from(..., "base64url")`, which is Node-only, so
+the middleware will need `export const config = { runtime: "nodejs" }` or the
+decode path made edge-safe first.
+
+**Tracked gap: self-registered users don't get the `user` realm role.**
+`deploy/keycloak/questlog-realm.json`'s `defaultRole.composites.realm`
+declares `["user", "offline_access", "uma_authorization"]`, but a live
+`docker compose up` shows the effective `default-roles-questlog` composite
+only carrying Keycloak's own built-ins (`manage-account`,
+`uma_authorization`, `view-profile`, `offline_access`) — `user` never
+lands on new signups (verified in Task 12; cause unexplained — the
+Keycloak import log reports the realm import succeeding with no warning,
+so this isn't a visibly failed import). Harmless today: nothing gates on
+`user` yet (`POST /auth/sync` only requires authentication; `admin-api`
+gates on `admin`), so the gap is latent. It becomes load-bearing the
+moment anything starts checking for the `user` role — self-registered
+users would be silently denied while the seeded `quest_user`/`quest_admin`
+accounts (which have roles assigned directly, not via the composite) pass,
+a bug that only reproduces for real signups. Fix belongs in a revisit of
+Task 8's realm export, not patched in Task 12.
+
+**Tracked gap: no refresh-token rotation.** `token.accessToken` is captured
+once at sign-in and never refreshed, against a ~5-minute Keycloak
+access-token lifetime and a 30-day JWT session. It's kept on the JWT
+(server-only, not exposed via `session`) for a future server component to
+reach via `auth()`, but as of Phase 3 nothing calls the Go API with a
+user's access token. **Refresh-token rotation is a prerequisite before
+anything does** (Phase 4+) — otherwise every such call fails once the
+token is more than a few minutes stale.
+
+**Tracked gap: a first-login identity sync that fails outright never
+retries afterwards.** `syncProfile` (`packages/auth/src/config.ts`) only
+runs from the `jwt` callback when `account?.access_token` is present, i.e.
+only at the initial sign-in, and it swallows failures (logged, not
+surfaced). If `public-api`/Postgres is down for that whole window, the user
+still gets a valid 30-day session with no `identity.user_profiles` row, and
+nothing will create one until they sign out and back in. Phase 5's reviews
+FK to that row, so this becomes load-bearing there.
+
+Three of the four original sub-problems are closed: the insert is
+idempotent under concurrent first logins (`postgres_repository.go`), a
+username collision is a 409 rather than a permanent opaque 500, and the
+fetch is bounded at 5s. Sign-in also retries once on a network error or 5xx
+(never on a 4xx, which is a verdict, not a blip), which covers a transient
+blip such as `public-api` mid-restart.
+
+What remains is the durable case, and it needs a mechanism this callback
+can't provide: a retry after sign-in needs a valid access token, and the
+one on the JWT is dead within ~5 minutes. Two viable shapes, both Phase 4+:
+refresh-token rotation (the gap above) plus a lazy re-sync on the next
+request, or a server-to-server reconciler holding its own
+client-credentials token. Note the second is **not** gated on refresh
+rotation — it never touches a user token — so "blocked on refresh" would
+overstate it. It's a scoping call: neither shape is a patch to this
+callback, and nothing depends on the row until Phase 5.
+
+**Known trade-off: admin sign-out doesn't terminate the Keycloak SSO
+session.** Fixing the admin "Acceso denegado" dead end (finding 4 of the
+Phase 3 fix wave) used `prompt: "login"` on the admin app's authorization
+params (`AUTH_PROMPT_LOGIN`, threaded through `packages/auth/src/config.ts`)
+rather than full federated logout against Keycloak's
+`end_session_endpoint`. This makes Keycloak always re-show a credentials
+form for the admin app, which is enough to let a denied user switch
+accounts — though because the SSO session survives, that form is
+Keycloak's *re-authenticate* screen with the username locked, so switching
+accounts costs one extra click on its "Restart login" button. Keycloak's
+own SSO cookie is untouched, so a still-logged-in session
+persists there (and in `apps/web`, which doesn't set `AUTH_PROMPT_LOGIN`)
+until it naturally expires or someone signs out of Keycloak directly.
+Acceptable for a two-client local-dev project; revisit with real
+federated logout (needs the id_token persisted on the JWT, and a
+browser-facing-URL redirect per ADR-0001) if that ever matters.
 
 ### Phase 4 — Catalog
 

@@ -20,3 +20,10 @@
   --ql-accent-deep: #4a6fd4;
   --ql-accent-ink: #0b1430;
 }
+/* Admin app: fixed amber accent, no user-facing toggle — matches
+   docs/design/mockups/v-admin.html's dedicated moderation palette. */
+:root[data-admin="true"] {
+  --ql-accent: #ffd166;
+  --ql-accent-deep: #d4a92f;
+  --ql-accent-ink: #231c05;
+}
