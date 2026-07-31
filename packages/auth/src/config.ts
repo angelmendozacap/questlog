@@ -7,17 +7,38 @@ const INTERNAL_ISSUER =
 const IDENTITY_SYNC_URL = requireEnv("IDENTITY_SYNC_URL");
 
 // Required and app-specific (set per-app in docker-compose.yml /
-// .env.example) — see finding 1's writeup for why this can't have a
-// shared default: web and admin both otherwise land on Auth.js's default
-// `authjs.session-token` cookie name, and cookies aren't port-scoped, so
-// localhost:3000 and localhost:3001 would share one cookie jar. Worse,
-// Auth.js derives its JWE encryption key via hkdf(secret, salt=cookieName),
-// so an identical secret *and* identical cookie name means each app would
-// also decrypt the other's session token as valid — signing into either
-// app would silently hijack the other's session. A distinct AUTH_SECRET
-// per app (also set in docker-compose.yml) closes the same hole from the
-// other direction; both are set, belt and suspenders.
-const COOKIE_NAME = requireEnv("AUTH_COOKIE_NAME");
+// .env.example) — this deliberately has no default. Without it, web and
+// admin both land on Auth.js's default `authjs.*` cookie names, and
+// cookies aren't port-scoped, so localhost:3000 and localhost:3001 share
+// one cookie jar. Worse, Auth.js derives its JWE encryption key via
+// hkdf(secret, salt=cookieName), so an identical secret *and* identical
+// cookie name means each app also decrypts the other's session token as
+// valid — signing into either app silently hijacks the other's session. A
+// distinct AUTH_SECRET per app (also set in docker-compose.yml) closes the
+// same hole from the other direction; both are set, belt and suspenders.
+const COOKIE_PREFIX = requireEnv("AUTH_COOKIE_PREFIX");
+
+// Every cookie Auth.js sets, not just the session one. The session cookie
+// is the security-critical case, but the short-lived flow cookies collide
+// too: with one shared `authjs.pkce.code_verifier`, starting a sign-in on
+// web and then on admin before finishing the first makes the second
+// overwrite the first's verifier, and the earlier callback fails. It fails
+// closed and a retry works, so it's an annoyance rather than a hole — but
+// it's the same "one cookie jar" root cause, so it's fixed the same way.
+//
+// Note these are literal names, which forfeits the `__Secure-` prefix
+// Auth.js would otherwise apply over HTTPS. The `secure` attribute itself
+// survives (Auth.js deep-merges these overrides onto its defaults); only
+// the prefix's browser-enforced guarantee is lost. Irrelevant on localhost
+// — revisit when there's a real HTTPS deployment.
+const cookieNames = {
+  sessionToken: { name: `${COOKIE_PREFIX}.session-token` },
+  callbackUrl: { name: `${COOKIE_PREFIX}.callback-url` },
+  csrfToken: { name: `${COOKIE_PREFIX}.csrf-token` },
+  pkceCodeVerifier: { name: `${COOKIE_PREFIX}.pkce.code_verifier` },
+  state: { name: `${COOKIE_PREFIX}.state` },
+  nonce: { name: `${COOKIE_PREFIX}.nonce` },
+};
 
 // Optional, app-specific. Keycloak keeps its own SSO session independent
 // of this app's session cookie, so signing out locally and clicking
@@ -55,9 +76,7 @@ export const authConfig: NextAuthConfig = {
     }),
   ],
   session: { strategy: "jwt" },
-  cookies: {
-    sessionToken: { name: COOKIE_NAME },
-  },
+  cookies: cookieNames,
   callbacks: {
     async jwt({ token, account }) {
       if (account?.access_token) {

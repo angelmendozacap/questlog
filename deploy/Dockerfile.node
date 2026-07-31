@@ -20,7 +20,7 @@ ARG APP
 # traffic (`next start`) re-evaluates this module fresh against its own
 # runtime environment (set via docker-compose's `environment:`), so build-
 # time values never leak into what a running container actually uses —
-# including AUTH_COOKIE_NAME, even though its whole purpose is to differ
+# including AUTH_COOKIE_PREFIX, even though its whole purpose is to differ
 # between web and admin; the placeholder below is identical for both and
 # that's fine, because next start never reads it.
 # Defaulted here (rather than required) so CI's `docker build --build-arg
@@ -33,10 +33,10 @@ ARG APP
 # becomes load-bearing later if someone assumes it's the real config.
 ARG AUTH_KEYCLOAK_ISSUER=http://build-arg-placeholder.invalid/realms/questlog
 ARG IDENTITY_SYNC_URL=http://build-arg-placeholder.invalid/auth/sync
-ARG AUTH_COOKIE_NAME=build-arg-placeholder.session-token
+ARG AUTH_COOKIE_PREFIX=build-arg-placeholder
 ENV AUTH_KEYCLOAK_ISSUER=${AUTH_KEYCLOAK_ISSUER}
 ENV IDENTITY_SYNC_URL=${IDENTITY_SYNC_URL}
-ENV AUTH_COOKIE_NAME=${AUTH_COOKIE_NAME}
+ENV AUTH_COOKIE_PREFIX=${AUTH_COOKIE_PREFIX}
 WORKDIR /repo
 RUN pnpm --filter ${APP} build
 

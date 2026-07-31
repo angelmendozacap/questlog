@@ -54,19 +54,25 @@ func (h *SyncHandler) Handle(c fiber.Ctx) error {
 		// errors, wrapped with %w by application.SyncService) may carry
 		// schema or SQL-adjacent detail, so it's logged server-side only
 		// and the caller gets a generic, static message.
-		if errors.Is(err, domain.ErrEmptyUsername) || errors.Is(err, domain.ErrEmptyKeycloakID) {
-			return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
-				"code": "invalid_claims", "message": err.Error(),
-			})
+		//
+		// Each branch returns the *sentinel's* own message rather than
+		// err.Error(): by the time it gets here the error has been wrapped
+		// by application.SyncService ("sync: insert profile: ..."), and
+		// that prefix names our internal layering for no caller benefit.
+		for _, known := range []error{domain.ErrEmptyUsername, domain.ErrEmptyKeycloakID} {
+			if errors.Is(err, known) {
+				return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+					"code": "invalid_claims", "message": known.Error(),
+				})
+			}
 		}
 		// A username collision with a different keycloak_id is an
 		// actionable conflict (the client — or the person behind it — can
 		// do something about it), not a server fault, and not a case we
-		// paper over by silently renaming the user. Static, safe to
-		// return as-is like the invalid_claims branch above.
+		// paper over by silently renaming the user.
 		if errors.Is(err, domain.ErrUsernameTaken) {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
-				"code": "username_taken", "message": err.Error(),
+				"code": "username_taken", "message": domain.ErrUsernameTaken.Error(),
 			})
 		}
 		log.Printf("identity: sync failed: %v", err)

@@ -121,7 +121,7 @@ services:
       dockerfile: deploy/Dockerfile.node
       args: { APP: web, PORT: "3000" }
     environment:
-      # Distinct from admin's AUTH_SECRET *and* AUTH_COOKIE_NAME below —
+      # Distinct from admin's AUTH_SECRET *and* AUTH_COOKIE_PREFIX below —
       # cookies aren't port-scoped, so localhost:3000 and localhost:3001
       # share one cookie jar, and Auth.js derives its session-encryption
       # key from hkdf(secret, salt=cookieName). Matching both would let
@@ -129,7 +129,7 @@ services:
       # merging their sessions and defeating the two-client separation in
       # deploy/keycloak/questlog-realm.json.
       AUTH_SECRET: dev-only-insecure-secret-change-me-web
-      AUTH_COOKIE_NAME: questlog-web.session-token
+      AUTH_COOKIE_PREFIX: questlog-web
       AUTH_KEYCLOAK_ID: questlog-web
       AUTH_KEYCLOAK_SECRET: questlog-web-dev-secret
       AUTH_KEYCLOAK_ISSUER: http://localhost:8082/realms/questlog
@@ -151,10 +151,10 @@ services:
       dockerfile: deploy/Dockerfile.node
       args: { APP: admin, PORT: "3001" }
     environment:
-      # Distinct from web's AUTH_SECRET *and* AUTH_COOKIE_NAME below — see
+      # Distinct from web's AUTH_SECRET *and* AUTH_COOKIE_PREFIX below — see
       # the matching comment on the web service above.
       AUTH_SECRET: dev-only-insecure-secret-change-me-admin
-      AUTH_COOKIE_NAME: questlog-admin.session-token
+      AUTH_COOKIE_PREFIX: questlog-admin
       AUTH_KEYCLOAK_ID: questlog-admin
       AUTH_KEYCLOAK_SECRET: questlog-admin-dev-secret
       AUTH_KEYCLOAK_ISSUER: http://localhost:8082/realms/questlog

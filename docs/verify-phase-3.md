@@ -85,7 +85,7 @@ see step 4.)
 
 Note this is *not* the same issue as `apps/web` and `apps/admin` sharing a
 session — they don't: each app has its own `AUTH_SECRET` and its own
-session cookie name (`AUTH_COOKIE_NAME`, `questlog-web.session-token` /
+session cookie name (from `AUTH_COOKIE_PREFIX`: `questlog-web.session-token` /
 `questlog-admin.session-token`), so signing into one no longer affects the
 other's session at all. See step 5.
 

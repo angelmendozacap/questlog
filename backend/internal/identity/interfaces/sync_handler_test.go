@@ -234,9 +234,12 @@ func TestSyncHandler(t *testing.T) {
 				if body["code"] != "username_taken" {
 					t.Errorf("code = %v, want username_taken", body["code"])
 				}
+				// Exactly the sentinel's own text: SyncService wraps the
+				// error ("sync: insert profile: ...") on its way up, and
+				// that prefix names our internal layering to the caller.
 				msg, _ := body["message"].(string)
-				if msg == "" {
-					t.Error("message was empty, want a non-empty explanation")
+				if msg != domain.ErrUsernameTaken.Error() {
+					t.Errorf("message = %q, want the bare sentinel %q", msg, domain.ErrUsernameTaken.Error())
 				}
 			},
 		},

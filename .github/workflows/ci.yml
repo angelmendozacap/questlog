@@ -40,10 +40,32 @@ jobs:
   go-lint-vet-test:
     name: Go lint, vet, test
     runs-on: ubuntu-latest
+    # backend/internal/identity/infrastructure's tests t.Skip without
+    # DATABASE_URL, and they're the only coverage of the repository's
+    # Postgres-specific behaviour: the ON CONFLICT (keycloak_id) inference
+    # target and the `user_profiles_username_key` constraint name that maps
+    # a collision to domain.ErrUsernameTaken. Both are string-coupled to the
+    # migration, so a rename would otherwise ship green and silently
+    # downgrade the 409 back to an opaque 500.
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: questlog
+          POSTGRES_PASSWORD: questlog
+          POSTGRES_DB: questlog
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U questlog"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgres://questlog:questlog@localhost:5432/questlog?sslmode=disable
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
         with: { go-version: "1.26", cache-dependency-path: backend/go.sum }
+      - working-directory: backend
+        run: go run ./cmd/migrate
       - working-directory: backend
         run: go build ./... && go vet ./... && go test ./... -race
       - working-directory: backend
