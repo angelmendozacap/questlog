@@ -29,13 +29,20 @@ func main() {
 	// `iss`, which is NOT the host we fetch JWKS from. See ADR-0001.
 	issuer := shared.MustEnv("KEYCLOAK_ISSUER")
 
+	// Stricter than public-api: only the admin Next.js app authenticates
+	// via questlog-admin, and that's the only client whose tokens should
+	// ever reach /admin/*. A quest_user token minted via questlog-web must
+	// still be rejected here even though it's a valid, same-realm token —
+	// that's the whole point of checking azp instead of just iss.
+	allowedAZP := shared.MustEnvList("KEYCLOAK_ALLOWED_AZP")
+
 	app := fiber.New()
 
 	app.Get("/healthz", func(c fiber.Ctx) error {
 		return c.JSON(shared.OK())
 	})
 
-	admin := app.Group("/admin", authmw.RequireAuth(jwks.Keyfunc, issuer), authmw.RequireRole("admin"))
+	admin := app.Group("/admin", authmw.RequireAuth(jwks.Keyfunc, issuer, allowedAZP), authmw.RequireRole("admin"))
 	admin.Get("/whoami", func(c fiber.Ctx) error {
 		claims, ok := authmw.ClaimsFromContext(c)
 		if !ok {

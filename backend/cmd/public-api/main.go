@@ -38,6 +38,11 @@ func main() {
 	// `iss`, which is NOT the host we fetch JWKS from. See ADR-0001.
 	issuer := shared.MustEnv("KEYCLOAK_ISSUER")
 
+	// Both first-party Next.js apps call /auth/sync right after their own
+	// sign-in (see packages/auth/src/config.ts), so public-api must accept
+	// tokens minted by either Keycloak client.
+	allowedAZP := shared.MustEnvList("KEYCLOAK_ALLOWED_AZP")
+
 	profiles := identityinfra.NewPostgresProfileRepository(pool)
 	syncHandler := identityiface.NewSyncHandler(identityapp.NewSyncService(profiles))
 
@@ -47,7 +52,7 @@ func main() {
 		return c.JSON(shared.OK())
 	})
 
-	app.Post("/auth/sync", authmw.RequireAuth(jwks.Keyfunc, issuer), syncHandler.Handle)
+	app.Post("/auth/sync", authmw.RequireAuth(jwks.Keyfunc, issuer, allowedAZP), syncHandler.Handle)
 
 	port := os.Getenv("PORT")
 	if port == "" {

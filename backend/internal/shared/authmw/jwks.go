@@ -14,6 +14,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"log"
 	"math/big"
 	"net/http"
 	"sync"
@@ -21,6 +22,15 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 )
+
+// httpClient is used for JWKS fetches instead of http.DefaultClient, which
+// has no timeout. A Keycloak that accepts the TCP connection but never
+// responds would otherwise hang the startup Refresh call forever (see
+// cmd/*/main.go, which calls Refresh synchronously and log.Fatalf's on
+// error) and permanently wedge StartBackgroundRefresh's goroutine — its
+// ticker keeps firing into a blocked Do(), so key refresh silently stops
+// for the process lifetime.
+var httpClient = &http.Client{Timeout: 10 * time.Second}
 
 type jwksKey struct {
 	Kty string `json:"kty"`
@@ -51,7 +61,7 @@ func (j *JWKS) Refresh(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return err
 	}
@@ -96,7 +106,7 @@ func (j *JWKS) StartBackgroundRefresh(interval time.Duration) {
 		defer ticker.Stop()
 		for range ticker.C {
 			if err := j.Refresh(context.Background()); err != nil {
-				fmt.Printf("authmw: background jwks refresh failed (keeping cached keys): %v\n", err)
+				log.Printf("authmw: background jwks refresh failed (keeping cached keys): %v", err)
 			}
 		}
 	}()

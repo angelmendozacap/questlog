@@ -17,6 +17,10 @@ import (
 // stamps into every token's `iss` claim.
 const testIssuer = "http://localhost:8082/realms/questlog"
 
+// testAllowedAZP stands in for a service's configured client allow-list
+// (KEYCLOAK_ALLOWED_AZP) — e.g. admin-api's ["questlog-admin"].
+var testAllowedAZP = []string{"questlog-web", "questlog-admin"}
+
 func testKeyPair(t *testing.T) *rsa.PrivateKey {
 	t.Helper()
 	key, err := rsa.GenerateKey(rand.Reader, 2048)
@@ -53,12 +57,13 @@ func TestRequireAuth_ValidToken(t *testing.T) {
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		},
 		PreferredUsername: "nekomata",
+		AuthorizedParty:   "questlog-web",
 	}
 	claims.RealmAccess.Roles = []string{"user"}
 	token := testToken(t, key, claims)
 
 	app := fiber.New()
-	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer), func(c fiber.Ctx) error {
+	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), func(c fiber.Ctx) error {
 		got, ok := authmw.ClaimsFromContext(c)
 		if !ok {
 			t.Fatal("claims not found in context")
@@ -82,7 +87,7 @@ func TestRequireAuth_MissingToken(t *testing.T) {
 	jwks := testJWKS(&key.PublicKey)
 
 	app := fiber.New()
-	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer), func(c fiber.Ctx) error {
+	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), func(c fiber.Ctx) error {
 		return c.SendString("ok")
 	})
 
@@ -109,7 +114,7 @@ func TestRequireAuth_ExpiredToken(t *testing.T) {
 	token := testToken(t, key, claims)
 
 	app := fiber.New()
-	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer), func(c fiber.Ctx) error {
+	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), func(c fiber.Ctx) error {
 		return c.SendString("ok")
 	})
 
@@ -140,7 +145,7 @@ func TestRequireAuth_WrongIssuer(t *testing.T) {
 	token := testToken(t, key, claims)
 
 	app := fiber.New()
-	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer), func(c fiber.Ctx) error {
+	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), func(c fiber.Ctx) error {
 		return c.SendString("ok")
 	})
 
@@ -167,7 +172,7 @@ func TestRequireAuth_MissingExpiry(t *testing.T) {
 	token := testToken(t, key, claims)
 
 	app := fiber.New()
-	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer), func(c fiber.Ctx) error {
+	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), func(c fiber.Ctx) error {
 		return c.SendString("ok")
 	})
 
@@ -191,12 +196,13 @@ func TestRequireRole_Forbidden(t *testing.T) {
 			Issuer:    testIssuer,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		},
+		AuthorizedParty: "questlog-web",
 	}
 	claims.RealmAccess.Roles = []string{"user"}
 	token := testToken(t, key, claims)
 
 	app := fiber.New()
-	app.Get("/admin/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer), authmw.RequireRole("admin"), func(c fiber.Ctx) error {
+	app.Get("/admin/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), authmw.RequireRole("admin"), func(c fiber.Ctx) error {
 		return c.SendString("ok")
 	})
 
@@ -220,12 +226,13 @@ func TestRequireRole_Allowed(t *testing.T) {
 			Issuer:    testIssuer,
 			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
 		},
+		AuthorizedParty: "questlog-admin",
 	}
 	claims.RealmAccess.Roles = []string{"user", "admin"}
 	token := testToken(t, key, claims)
 
 	app := fiber.New()
-	app.Get("/admin/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer), authmw.RequireRole("admin"), func(c fiber.Ctx) error {
+	app.Get("/admin/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), authmw.RequireRole("admin"), func(c fiber.Ctx) error {
 		return c.SendString("ok")
 	})
 
@@ -237,5 +244,72 @@ func TestRequireRole_Allowed(t *testing.T) {
 	}
 	if resp.StatusCode != fiber.StatusOK {
 		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+}
+
+// A well-signed, unexpired, right-issuer token from a client outside the
+// allow-list must still be rejected — this is the whole point of checking
+// `azp`: a third client added to the realm later must not get its tokens
+// silently accepted just because they're same-realm and well-formed.
+func TestRequireAuth_DisallowedAZP(t *testing.T) {
+	key := testKeyPair(t)
+	jwks := testJWKS(&key.PublicKey)
+
+	claims := authmw.Claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    testIssuer,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		},
+		AuthorizedParty: "some-future-client",
+	}
+	claims.RealmAccess.Roles = []string{"user", "admin"}
+	token := testToken(t, key, claims)
+
+	app := fiber.New()
+	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), func(c fiber.Ctx) error {
+		return c.SendString("ok")
+	})
+
+	req := httptest.NewRequest("GET", "/whoami", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, err := app.Test(req)
+	if err != nil {
+		t.Fatalf("app.Test: %v", err)
+	}
+	if resp.StatusCode != fiber.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401 for azp outside the allow-list", resp.StatusCode)
+	}
+}
+
+// A token with no `azp` claim at all must be rejected — fail closed rather
+// than treat an absent claim as implicitly trusted. Every real Keycloak
+// grant this project uses (authorization code, password) stamps `azp`, so
+// a token missing it is unexpected and should not pass.
+func TestRequireAuth_MissingAZP(t *testing.T) {
+	key := testKeyPair(t)
+	jwks := testJWKS(&key.PublicKey)
+
+	claims := authmw.Claims{
+		RegisteredClaims: jwt.RegisteredClaims{
+			Issuer:    testIssuer,
+			ExpiresAt: jwt.NewNumericDate(time.Now().Add(time.Hour)),
+		},
+	}
+	claims.RealmAccess.Roles = []string{"user"}
+	token := testToken(t, key, claims)
+
+	app := fiber.New()
+	app.Get("/whoami", authmw.RequireAuth(jwks.Keyfunc, testIssuer, testAllowedAZP), func(c fiber.Ctx) error {
+		return c.SendString("ok")
+	})
+
+	req := httptest.NewRequest("GET", "/whoami", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	resp, err := app.Test(req)
+	if err != nil {
+		t.Fatalf("app.Test: %v", err)
+	}
+	if resp.StatusCode != fiber.StatusUnauthorized {
+		t.Fatalf("status = %d, want 401 for a token with no azp claim", resp.StatusCode)
 	}
 }

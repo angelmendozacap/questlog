@@ -1,6 +1,7 @@
 package authmw
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/gofiber/fiber/v3"
@@ -10,12 +11,16 @@ import (
 // Claims are the token fields QuestLog cares about. PreferredUsername and
 // Picture come straight from Keycloak's standard OIDC claims; RealmAccess
 // is Keycloak-specific (its default "roles" client scope maps realm roles
-// into the access token under this exact shape).
+// into the access token under this exact shape). AuthorizedParty is the
+// standard OIDC `azp` claim — Keycloak stamps it with the client ID that
+// requested the token, which is what RequireAuth checks against its
+// allow-list (see the `allowedAZP` param below).
 type Claims struct {
 	jwt.RegisteredClaims
 	PreferredUsername string `json:"preferred_username"`
 	Email             string `json:"email"`
 	Picture           string `json:"picture"`
+	AuthorizedParty   string `json:"azp"`
 	RealmAccess       struct {
 		Roles []string `json:"roles"`
 	} `json:"realm_access"`
@@ -37,14 +42,23 @@ const claimsKey contextKey = "authmw_claims"
 
 // RequireAuth validates the request's Bearer JWT: signature via keyFunc,
 // expiry (required — a token with no `exp` is rejected rather than treated
-// as never-expiring), and issuer pinned to `issuer`. On success it stores
-// the parsed Claims for downstream handlers/middleware via
-// ClaimsFromContext.
+// as never-expiring), issuer pinned to `issuer`, and `azp` (the client that
+// requested the token) against `allowedAZP`. On success it stores the
+// parsed Claims for downstream handlers/middleware via ClaimsFromContext.
 //
 // `issuer` is the browser-facing realm URL, which is what Keycloak puts in
 // `iss`. It is deliberately NOT the same host the JWKS is fetched from —
 // see docs/adr/0001-keycloak-docker-network-split.md.
-func RequireAuth(keyFunc jwt.Keyfunc, issuer string) fiber.Handler {
+//
+// `allowedAZP` is which Keycloak client(s) this service trusts tokens from.
+// Signature/exp/iss alone only prove a token came from *this* realm — not
+// which client minted it. Keycloak's default `aud` claim is just "account"
+// for every client, so it's not useful here; `azp` is. A token with no
+// `azp` claim at all is rejected (fail closed) rather than treated as
+// implicitly trusted — every real Keycloak grant (auth code, password)
+// stamps `azp` with the requesting client, so a token missing it is either
+// malformed or from a grant type this project doesn't use.
+func RequireAuth(keyFunc jwt.Keyfunc, issuer string, allowedAZP []string) fiber.Handler {
 	return func(c fiber.Ctx) error {
 		header := c.Get("Authorization")
 		token, ok := strings.CutPrefix(header, "Bearer ")
@@ -61,6 +75,12 @@ func RequireAuth(keyFunc jwt.Keyfunc, issuer string) fiber.Handler {
 			jwt.WithValidMethods([]string{"RS256"}),
 		)
 		if err != nil || !parsed.Valid {
+			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
+				"code": "unauthorized", "message": "invalid token",
+			})
+		}
+
+		if !slices.Contains(allowedAZP, claims.AuthorizedParty) {
 			return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{
 				"code": "unauthorized", "message": "invalid token",
 			})
