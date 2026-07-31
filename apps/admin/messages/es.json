@@ -8,7 +8,7 @@
     "signInMessage": "Inicia sesión con una cuenta con rol de administrador.",
     "signIn": "Iniciar sesión",
     "deniedTitle": "Acceso denegado",
-    "deniedMessage": "Tu cuenta no tiene el rol de administrador.",
+    "deniedMessage": "Tu cuenta no tiene el rol de administrador. Cierra sesión para entrar con otra cuenta.",
     "signOut": "Cerrar sesión"
   }
 }

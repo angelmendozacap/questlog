@@ -43,7 +43,9 @@ export default async function CuentaPage() {
           })}
         </p>
         <p style={{ color: "var(--ql-muted)", marginTop: 4 }}>
-          {t("roles", { roles: session.roles.join(", ") || t("noRoles") })}
+          {t("roles", {
+            roles: session.roles?.join(", ") || t("noRoles"),
+          })}
         </p>
         <form
           action={async () => {

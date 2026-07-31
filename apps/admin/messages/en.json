@@ -8,7 +8,7 @@
     "signInMessage": "Sign in with an account that has the admin role.",
     "signIn": "Sign in",
     "deniedTitle": "Access denied",
-    "deniedMessage": "Your account doesn't have the admin role.",
+    "deniedMessage": "Your account doesn't have the admin role. Sign out to sign in with a different account.",
     "signOut": "Sign out"
   }
 }
