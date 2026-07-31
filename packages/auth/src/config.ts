@@ -133,27 +133,53 @@ function decodeRealmRoles(accessToken: string): string[] {
 // the identity API's health any more than this.
 const SYNC_TIMEOUT_MS = 5_000;
 
+// This is the only moment a valid access token exists (it's captured at
+// sign-in and never refreshed), so a transient blip here — public-api mid
+// restart, a connection reset — costs the user their profile row until
+// they next sign in. One retry is cheap insurance against that. It is
+// bounded deliberately: each attempt can burn SYNC_TIMEOUT_MS of the
+// user's sign-in, so this is the transient case only, not a substitute for
+// the durable retry PLAN.md tracks as still open.
+const SYNC_ATTEMPTS = 2;
+const SYNC_RETRY_DELAY_MS = 500;
+
 /**
  * Syncs the local identity profile — see backend/internal/identity.
  *
  * Best-effort: failures are logged and swallowed rather than blocking
  * sign-in, so a down public-api/Postgres doesn't lock users out. Known
- * limitation: if this fails, nothing retries it — see PLAN.md's Phase 3
- * tracked gaps.
+ * limitation: if every attempt fails, nothing retries it afterwards —
+ * see PLAN.md's Phase 3 tracked gaps.
  */
 async function syncProfile(accessToken: string): Promise<void> {
-  try {
-    const res = await fetch(IDENTITY_SYNC_URL, {
-      method: "POST",
-      headers: { Authorization: `Bearer ${accessToken}` },
-      signal: AbortSignal.timeout(SYNC_TIMEOUT_MS),
-    });
-    if (!res.ok) {
+  for (let attempt = 1; attempt <= SYNC_ATTEMPTS; attempt++) {
+    try {
+      const res = await fetch(IDENTITY_SYNC_URL, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+        signal: AbortSignal.timeout(SYNC_TIMEOUT_MS),
+      });
+      if (res.ok) return;
+      // A 4xx is a verdict about this request, not a blip: 401 (the token
+      // is wrong), 400 (the claims are unusable), 409 (the username
+      // belongs to another account). Retrying cannot change any of them.
+      if (res.status < 500) {
+        console.error(
+          `identity sync rejected: ${res.status} ${res.statusText} (not retrying)`,
+        );
+        return;
+      }
       console.error(`identity sync failed: ${res.status} ${res.statusText}`);
+    } catch (err) {
+      console.error("identity sync failed:", err);
     }
-  } catch (err) {
-    console.error("identity sync failed:", err);
+    if (attempt < SYNC_ATTEMPTS) {
+      await new Promise((resolve) => setTimeout(resolve, SYNC_RETRY_DELAY_MS));
+    }
   }
+  console.error(
+    `identity sync gave up after ${SYNC_ATTEMPTS} attempts; this account has no profile row until its next sign-in`,
+  );
 }
 
 function requireEnv(name: string): string {

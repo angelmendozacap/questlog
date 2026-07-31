@@ -247,19 +247,28 @@ user's access token. **Refresh-token rotation is a prerequisite before
 anything does** (Phase 4+) — otherwise every such call fails once the
 token is more than a few minutes stale.
 
-**Tracked gap: a failed first-login identity sync never retries.**
-`syncProfile` (`packages/auth/src/config.ts`) only runs from the `jwt`
-callback when `account?.access_token` is present, i.e. only at the initial
-sign-in — and it swallows all failures (logged, not surfaced). If
-`public-api`/Postgres is down at that exact moment, the user still gets a
-valid 30-day session with no `identity.user_profiles` row, and nothing
-will create one until they sign out and back in. Phase 5's reviews FK to
-that row, so this becomes load-bearing there. `EnsureProfile`'s insert is
-now idempotent under concurrent first logins (`postgres_repository.go`),
-which closes the race-condition half of this problem, but not the
-down-dependency-at-sign-in half — that needs an actual retry mechanism
-(e.g. re-attempt sync lazily on next request, or a background reconciler),
-not yet built.
+**Tracked gap: a first-login identity sync that fails outright never
+retries afterwards.** `syncProfile` (`packages/auth/src/config.ts`) only
+runs from the `jwt` callback when `account?.access_token` is present, i.e.
+only at the initial sign-in, and it swallows failures (logged, not
+surfaced). If `public-api`/Postgres is down for that whole window, the user
+still gets a valid 30-day session with no `identity.user_profiles` row, and
+nothing will create one until they sign out and back in. Phase 5's reviews
+FK to that row, so this becomes load-bearing there.
+
+Three of the four original sub-problems are closed: the insert is
+idempotent under concurrent first logins (`postgres_repository.go`), a
+username collision is a 409 rather than a permanent opaque 500, and the
+fetch is bounded at 5s. Sign-in also retries once on a network error or 5xx
+(never on a 4xx, which is a verdict, not a blip), which covers a transient
+blip such as `public-api` mid-restart.
+
+What remains is the durable case, and it is **blocked on refresh-token
+rotation** (the gap above): a retry after sign-in needs a valid access
+token, and the one on the JWT is dead within ~5 minutes. So the real fix is
+either token refresh plus a lazy re-sync on the next request, or a
+server-to-server reconciler with its own client-credentials token — both
+Phase 4+ work, neither a patch to this callback.
 
 **Known trade-off: admin sign-out doesn't terminate the Keycloak SSO
 session.** Fixing the admin "Acceso denegado" dead end (finding 4 of the
